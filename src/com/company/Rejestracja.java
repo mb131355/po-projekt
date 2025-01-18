@@ -18,6 +18,7 @@ public class Rejestracja extends JFrame {
     private JButton zarzadzajGodzinamiButton;
     private JButton zarzadzajUzytkownikamiButton;
     private JTextField wynik;
+    private JButton listaRejestacjiButton;
     private JTextField formatDaty;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";  // Adres bazy danych
@@ -62,6 +63,14 @@ public class Rejestracja extends JFrame {
                 new DodawanieUzytkownika().setVisible(true);
             }
         });
+
+        listaRejestacjiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ListaRezerwacji().setVisible(true);
+            }
+        });
+
     }
 
     // Ładowanie użytkowników i godzin do ComboBoxów
