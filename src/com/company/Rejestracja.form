@@ -16,122 +16,50 @@
         <properties/>
         <border type="none" title=""/>
         <children>
-          <component id="16514" class="javax.swing.JLabel">
+          <component id="userComboBox" class="javax.swing.JComboBox" binding="userComboBox">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Lekarz przyjmuje od poniedziałku do piątku, w godzinach *12:00-17:00*.Aby zapisac się do lekarza, wprowadź "/>
-            </properties>
-          </component>
-          <vspacer id="43557">
-            <constraints>
-              <grid row="9" column="2" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </vspacer>
-          <component id="59e78" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Imię"/>
-            </properties>
-          </component>
-          <component id="326c3" class="javax.swing.JTextField" binding="imie">
-            <constraints>
-              <grid row="1" column="3" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
+              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
-          <component id="cbb2e" class="javax.swing.JLabel">
+          <component id="datetimeComboBox" class="javax.swing.JComboBox" binding="godzinyPracy">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Nazwisko"/>
+              <model/>
             </properties>
           </component>
-          <component id="b39df" class="javax.swing.JTextField" binding="nazwisko">
+          <component id="OKButton" class="javax.swing.JButton" binding="OKButton">
             <constraints>
-              <grid row="2" column="3" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="1b3cb" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Pesel"/>
-            </properties>
-          </component>
-          <component id="7e616" class="javax.swing.JTextField" binding="pesel">
-            <constraints>
-              <grid row="3" column="3" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="2a88c" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Data i godzina"/>
-            </properties>
-          </component>
-          <component id="75667" class="javax.swing.JTextField" binding="dataRezerwacji">
-            <constraints>
-              <grid row="4" column="3" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="7f65" class="javax.swing.JButton" binding="OKButton" default-binding="true">
-            <constraints>
-              <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="OK"/>
             </properties>
           </component>
-          <component id="a0727" class="javax.swing.JTextField" binding="wynik">
+          <component id="wynik" class="javax.swing.JTextField" binding="wynik">
             <constraints>
-              <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Label"/>
+              <text value="Wynik rejestracji:"/>
             </properties>
           </component>
-          <component id="9d2c2" class="javax.swing.JTextField" binding="formatDaty">
+          <component id="zarzadzajGodzinamiButton" class="javax.swing.JButton" binding="zarzadzajGodzinamiButton">
             <constraints>
-              <grid row="5" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <inheritsPopupMenu value="false"/>
-              <text value="(w formacie DD/MM/YYYY-HH:MM)"/>
+              <text value="Zarządzaj Godzinami"/>
             </properties>
           </component>
-          <component id="7c21b" class="javax.swing.JButton" binding="zarzadzajGodzinamiButton">
+          <component id="zarzadzajUzytkownikamiButton" class="javax.swing.JButton" binding="zarzadzajUzytkownikamiButton">
             <constraints>
-              <grid row="7" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Zarzadaj Godzinami"/>
-            </properties>
-          </component>
-          <component id="4f975" class="javax.swing.JButton" binding="zarzadzajUzytkownikamiButton" default-binding="true">
-            <constraints>
-              <grid row="8" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Zarzadzaj Uzytkownikami"/>
+              <text value="Zarządzaj Użytkownikami"/>
             </properties>
           </component>
         </children>
