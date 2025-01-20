@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.netbeans.org/ns/form/1" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netbeans.org/ns/form/1 http://www.netbeans.org/ns/form/1/form-1_0.xsd">
+  <panelLayout>
+    <borderLayout/>
+  </panelLayout>
+  <content>
+    <javax.swing.JPanel preferredSize="new java.awt.Dimension(800, 600)">
+      <layout>
+        <javax.swing.BoxLayout axis="Y_AXIS"/>
+      </layout>
+      <components>
+        <javax.swing.JTextArea name="rejestracjeArea" editable="false" rows="20" columns="50"/>
+      </components>
+    </javax.swing.JPanel>
+  </content>
+</form>

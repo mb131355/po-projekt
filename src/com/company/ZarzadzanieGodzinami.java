@@ -9,26 +9,23 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class ZarzadzanieGodzinami extends JFrame {
-    private JPanel mainPanel; // Powiązane z XML
-    private JTextField godzinaStart; // Powiązane z XML
-    private JTextField godzinaKoniec; // Powiązane z XML
-    private JButton dodajGodzineButton; // Powiązane z XML
-    private JButton usunGodzineButton; // Powiązane z XML
-    private JLabel wynik; // Powiązane z XML
+    private JPanel mainPanel;
+    private JTextField godzinaStart;
+    private JTextField godzinaKoniec;
+    private JButton dodajGodzineButton;
+    private JButton usunGodzineButton;
+    private JLabel wynik;
 
-    // Dane do połączenia z bazą
-    private static final String URL = "jdbc:mysql://localhost:3306/rejestracja"; // Zmień na swoją bazę danych
-    private static final String USER = "root"; // Zmień na swoje dane użytkownika
-    private static final String PASSWORD = ""; // Zmień na swoje hasło
+    private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
 
     public ZarzadzanieGodzinami() {
-        // Ustawienia okna
         setTitle("Zarządzanie Godzinami");
-        setContentPane(mainPanel); // Załadowanie z pliku XML
+        setContentPane(mainPanel);
         setSize(800, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Okno będzie zamknięte po kliknięciu X
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Obsługa przycisków
         dodajGodzineButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -48,7 +45,6 @@ public class ZarzadzanieGodzinami extends JFrame {
         String godzinaStartowa = godzinaStart.getText();
         String godzinaKoncowa = godzinaKoniec.getText();
 
-        // Połącz z bazą danych i zapisz dane
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "INSERT INTO terminy (DATA_I_GODZINA) VALUES (?)";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -69,7 +65,6 @@ public class ZarzadzanieGodzinami extends JFrame {
         String godzinaStartowa = godzinaStart.getText();
         String godzinaKoncowa = godzinaKoniec.getText();
 
-        // Połącz z bazą danych i usuń dane
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "DELETE FROM terminy WHERE DATA_I_GODZINA = ?";
             PreparedStatement stmt = conn.prepareStatement(query);

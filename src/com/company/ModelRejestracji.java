@@ -7,7 +7,7 @@ public class ModelRejestracji {
     private String pesel;
     private String dataigodzina;
 
-    public ModelRejestracji(String imie, String nazwisko, String pesel, String dataigodzina) { //parametry konstruktora
+    public ModelRejestracji(String imie, String nazwisko, String pesel, String dataigodzina) {
         this.imie = imie;
         this.nazwisko = nazwisko;
         this.pesel = pesel;

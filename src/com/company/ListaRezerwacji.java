@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ListaRezerwacji extends JFrame {
     private JPanel panel1;
-    private JTable rezerwacjeTable;  // Zaktualizowana zmienna
+    private JTable rezerwacjeTable;
     private JButton closeButton;
     private JLabel headerImie;
     private JLabel headerNazwisko;
@@ -24,19 +24,16 @@ public class ListaRezerwacji extends JFrame {
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 500);
-        // Ładowanie rezerwacji z bazy
         loadReservations();
 
         closeButton.addActionListener(e -> {
-            dispose();  // Zamknięcie okna
+            dispose();
         });
     }
 
-    // Ładowanie rezerwacji do tabeli
     private void loadReservations() {
         List<Object[]> reservations = new ArrayList<>();
 
-        // Pobieranie danych z bazy danych
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.DATA_I_GODZINA FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
@@ -56,10 +53,9 @@ public class ListaRezerwacji extends JFrame {
             e.printStackTrace();
         }
 
-        // Ustawienie modelu tabeli z danymi
         DefaultTableModel model = new DefaultTableModel(
-                reservations.toArray(new Object[0][0]),  // Dane
-                new String[]{"", "", "", ""}  // Puste nagłówki
+                reservations.toArray(new Object[0][0]),
+                new String[]{"", "", "", ""}
         );
         rezerwacjeTable.setModel(model);
     }
