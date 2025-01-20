@@ -34,12 +34,15 @@ public class DodawanieUzytkownika extends JFrame {
                 String pesel = peselField.getText();
 
                 if (imie.isEmpty() || nazwisko.isEmpty() || pesel.isEmpty()) {
-                    komunikatField.setText("Wszystkie pola muszą być wypełnione!");
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Wszystkie pola muszą być wypełnione!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                } else if (!pesel.matches("\\d{11}")) {
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else {
                     addUserToDatabase(imie, nazwisko, pesel);
                 }
             }
         });
+
     }
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
