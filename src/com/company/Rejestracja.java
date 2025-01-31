@@ -101,55 +101,58 @@ public class Rejestracja extends JFrame {
 
     private void registerUser(String userName, String selectedHour) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+
+            // Sprawdzenie, czy użytkownik istnieje
             String userQuery = "SELECT ID FROM uzytkownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement userStmt = conn.prepareStatement(userQuery);
             userStmt.setString(1, userName);
             ResultSet rsUser = userStmt.executeQuery();
-            int userId = 0;
-            if (rsUser.next()) {
-                userId = rsUser.getInt("ID");
-                System.out.println("User ID: " + userId);
-            } else {
-                System.out.println("Brak użytkownika o nazwisku: " + userName);
+            if (!rsUser.next()) {
+                wynik.setText("Nie znaleziono użytkownika!");
+                return;
             }
+            int userId = rsUser.getInt("ID");
 
+            // Sprawdzenie, czy termin istnieje
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
             ResultSet rsHour = hourStmt.executeQuery();
-            int hourId = 0;
-            if (rsHour.next()) {
-                hourId = rsHour.getInt("ID");
-                System.out.println("Hour ID: " + hourId);
-            } else {
-                System.out.println("Brak terminu o godzinie: " + selectedHour);
+            if (!rsHour.next()) {
+                wynik.setText("Nie znaleziono terminu!");
+                return;
             }
+            int hourId = rsHour.getInt("ID");
 
-            if (userId == 0 || hourId == 0) {
-                wynik.setText("Nie udało się znaleźć użytkownika lub terminu.");
+            // Sprawdzenie, czy użytkownik już jest zapisany na ten termin
+            String checkQuery = "SELECT ID FROM rejestracje WHERE UZYTKOWNIK_ID = ? AND TERMIN_ID = ?";
+            PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+            checkStmt.setInt(1, userId);
+            checkStmt.setInt(2, hourId);
+            ResultSet rsCheck = checkStmt.executeQuery();
+            if (rsCheck.next()) {
+                wynik.setText("Użytkownik już zapisany na ten termin!");
                 return;
             }
 
-            String query = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID) VALUES (?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, userId);
-            stmt.setInt(2, hourId);
-            int rowsInserted = stmt.executeUpdate();
+            // Rejestracja użytkownika
+            String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID) VALUES (?, ?)";
+            PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
+            insertStmt.setInt(1, userId);
+            insertStmt.setInt(2, hourId);
+            int rowsInserted = insertStmt.executeUpdate();
             if (rowsInserted > 0) {
                 wynik.setText("Rejestracja zakończona!");
-                System.out.println("Rejestracja zakończona!");
-
-
                 loadUsersAndHours();
             } else {
                 wynik.setText("Nie udało się zarejestrować.");
-                System.out.println("Nie udało się zarejestrować."); 
             }
 
         } catch (SQLException e) {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         JFrame frame = new Rejestracja();
