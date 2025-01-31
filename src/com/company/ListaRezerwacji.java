@@ -42,9 +42,9 @@ public class ListaRezerwacji extends JFrame {
                 String imie = rs.getString("IMIE");
                 String nazwisko = rs.getString("NAZWISKO");
                 String pesel = rs.getString("PESEL");
-                String dataGodzina = rs.getString("GODZINY");
+                String godzina = rs.getString("GODZINY");
 
-                reservations.add(new Object[]{imie, nazwisko, pesel, dataGodzina});
+                reservations.add(new Object[]{imie, nazwisko, pesel, godzina});
             }
         } catch (SQLException e) {
             e.printStackTrace();
