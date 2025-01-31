@@ -10,10 +10,7 @@ public class ListaRezerwacji extends JFrame {
     private JPanel panel1;
     private JTable rezerwacjeTable;
     private JButton closeButton;
-    private JLabel headerImie;
-    private JLabel headerNazwisko;
-    private JLabel headerPesel;
-    private JLabel headerDataGodzina;
+
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";

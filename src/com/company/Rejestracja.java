@@ -10,16 +10,12 @@ import java.util.List;
 public class Rejestracja extends JFrame {
     private JPanel panel1;
     private JComboBox<String> userComboBox;
-    private JTextField nazwisko;
-    private JTextField pesel;
     private JComboBox<String> godzinyPracy;
-    private JTextField dataRezerwacji;
     private JButton OKButton;
     private JButton zarzadzajGodzinamiButton;
     private JButton zarzadzajUzytkownikamiButton;
     private JTextField wynik;
     private JButton listaRejestacjiButton;
-    private JTextField formatDaty;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
