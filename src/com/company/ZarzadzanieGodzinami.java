@@ -46,7 +46,7 @@ public class ZarzadzanieGodzinami extends JFrame {
         String godzinaKoncowa = godzinaKoniec.getText();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String query = "INSERT INTO terminy (DATA_I_GODZINA) VALUES (?)";
+            String query = "INSERT INTO terminy (GODZINY) VALUES (?)";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, godzinaStartowa + " - " + godzinaKoncowa);
 
@@ -66,7 +66,7 @@ public class ZarzadzanieGodzinami extends JFrame {
         String godzinaKoncowa = godzinaKoniec.getText();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String query = "DELETE FROM terminy WHERE DATA_I_GODZINA = ?";
+            String query = "DELETE FROM terminy WHERE GODZINY = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, godzinaStartowa + " - " + godzinaKoncowa);
 

@@ -35,7 +35,7 @@ public class ListaRezerwacji extends JFrame {
         List<Object[]> reservations = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.DATA_I_GODZINA FROM rejestracje r " +
+            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID";
             Statement stmt = conn.createStatement();
@@ -45,7 +45,7 @@ public class ListaRezerwacji extends JFrame {
                 String imie = rs.getString("IMIE");
                 String nazwisko = rs.getString("NAZWISKO");
                 String pesel = rs.getString("PESEL");
-                String dataGodzina = rs.getString("DATA_I_GODZINA");
+                String dataGodzina = rs.getString("GODZINY");
 
                 reservations.add(new Object[]{imie, nazwisko, pesel, dataGodzina});
             }

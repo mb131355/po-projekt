@@ -83,11 +83,11 @@ public class Rejestracja extends JFrame {
                 users.add(user);
             }
 
-            String queryHours = "SELECT DATA_I_GODZINA FROM terminy";
+            String queryHours = "SELECT GODZINY FROM terminy";
             Statement stmtHours = conn.createStatement();
             ResultSet rsHours = stmtHours.executeQuery(queryHours);
             while (rsHours.next()) {
-                String hour = rsHours.getString("DATA_I_GODZINA");
+                String hour = rsHours.getString("GODZINY");
                 hours.add(hour);
             }
 
@@ -113,7 +113,7 @@ public class Rejestracja extends JFrame {
                 System.out.println("Brak użytkownika o nazwisku: " + userName);
             }
 
-            String hourQuery = "SELECT ID FROM terminy WHERE DATA_I_GODZINA = ?";
+            String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
             ResultSet rsHour = hourStmt.executeQuery();
