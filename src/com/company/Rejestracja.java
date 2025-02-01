@@ -16,12 +16,14 @@ public class Rejestracja extends JFrame {
     private JButton zarzadzajUzytkownikamiButton;
     private JTextField wynik;
     private JButton listaRejestacjiButton;
+    private JComboBox<String> dniTygodnia;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
     private GodzinaListener listener;
+
     public void setGodzinaListener(GodzinaListener listener) {
         this.listener = listener;
     }
@@ -34,16 +36,21 @@ public class Rejestracja extends JFrame {
 
         loadUsersAndHours();
 
+        // Dodanie dni tygodnia do JComboBox
+        String[] dni = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"};
+        dniTygodnia.setModel(new DefaultComboBoxModel<>(dni));
+
         OKButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedUser = (String) userComboBox.getSelectedItem();
                 String selectedHour = (String) godzinyPracy.getSelectedItem();
+                String selectDay = (String) dniTygodnia.getSelectedItem();
 
-                if (selectedUser == null || selectedHour.isEmpty()) {
+                if (selectedUser == null || selectedHour == null || selectDay == null) {
                     wynik.setText("Wszystkie pola muszą być wypełnione!");
                 } else {
-                    registerUser(selectedUser, selectedHour);
+                    registerUser(selectedUser, selectedHour, selectDay);
                 }
             }
         });
@@ -67,7 +74,6 @@ public class Rejestracja extends JFrame {
             }
         });
 
-
         zarzadzajUzytkownikamiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -77,14 +83,12 @@ public class Rejestracja extends JFrame {
             }
         });
 
-
         listaRejestacjiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new ListaRezerwacji().setVisible(true);
             }
         });
-
     }
 
     private void loadUsersAndHours() {
@@ -116,7 +120,7 @@ public class Rejestracja extends JFrame {
         godzinyPracy.setModel(new DefaultComboBoxModel<>(hours.toArray(new String[0])));
     }
 
-    private void registerUser(String userName, String selectedHour) {
+    private void registerUser(String userName, String selectedHour, String selectDay) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
             // Sprawdzenie, czy użytkownik istnieje
@@ -142,25 +146,27 @@ public class Rejestracja extends JFrame {
             int hourId = rsHour.getInt("ID");
 
             // Sprawdzenie, czy użytkownik już jest zapisany na ten termin
-            String checkQuery = "SELECT ID FROM rejestracje WHERE UZYTKOWNIK_ID = ? AND TERMIN_ID = ?";
+            String checkQuery = "SELECT ID FROM rejestracje WHERE UZYTKOWNIK_ID = ? AND TERMIN_ID = ? AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, userId);
             checkStmt.setInt(2, hourId);
+            checkStmt.setString(3, selectDay);  // Dodajemy sprawdzenie dnia
             ResultSet rsCheck = checkStmt.executeQuery();
             if (rsCheck.next()) {
-                wynik.setText("Użytkownik już zapisany na ten termin!");
+                wynik.setText("Użytkownik już zapisany na ten termin w wybranym dniu!");
                 return;
             }
 
             // Rejestracja użytkownika
-            String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID) VALUES (?, ?)";
+            String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN) VALUES (?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, hourId);
+            insertStmt.setString(3, selectDay);  // Przechowujemy dzień w bazie
             int rowsInserted = insertStmt.executeUpdate();
             if (rowsInserted > 0) {
                 wynik.setText("Rejestracja zakończona!");
-                loadUsersAndHours();
+                loadUsersAndHours();  // Odśwież listy
             } else {
                 wynik.setText("Nie udało się zarejestrować.");
             }
@@ -169,7 +175,6 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
-
 
     public static void main(String[] args) {
         JFrame frame = new Rejestracja();
