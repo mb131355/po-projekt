@@ -145,25 +145,26 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
-            // Sprawdzenie, czy użytkownik już jest zapisany na ten termin
-            String checkQuery = "SELECT ID FROM rejestracje WHERE UZYTKOWNIK_ID = ? AND TERMIN_ID = ? AND DZIEN = ?";
+            // Sprawdzanie, czy ktoś inny jest już zapisany na ten termin i dzień
+            String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
-            checkStmt.setInt(1, userId);
-            checkStmt.setInt(2, hourId);
-            checkStmt.setString(3, selectDay);  // Dodajemy sprawdzenie dnia
+            checkStmt.setInt(1, hourId);
+            checkStmt.setString(2, selectDay);  // Sprawdzamy tylko termin i dzień
             ResultSet rsCheck = checkStmt.executeQuery();
+
             if (rsCheck.next()) {
-                wynik.setText("Użytkownik już zapisany na ten termin w wybranym dniu!");
-                return;
+                wynik.setText("Na ten termin i dzień jest już ktoś zapisany!");
+                return;  // Przerwanie rejestracji, jeśli ktoś inny jest już zapisany
             }
 
-            // Rejestracja użytkownika
+            // Rejestracja użytkownika na nowy termin
             String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN) VALUES (?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, hourId);
             insertStmt.setString(3, selectDay);  // Przechowujemy dzień w bazie
             int rowsInserted = insertStmt.executeUpdate();
+
             if (rowsInserted > 0) {
                 wynik.setText("Rejestracja zakończona!");
                 loadUsersAndHours();  // Odśwież listy
@@ -175,6 +176,7 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         JFrame frame = new Rejestracja();
