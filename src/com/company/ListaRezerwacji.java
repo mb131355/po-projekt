@@ -50,7 +50,7 @@ public class ListaRezerwacji extends JFrame {
         List<Object[]> reservations = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY FROM rejestracje r " +
+            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID";
             Statement stmt = conn.createStatement();
@@ -61,8 +61,9 @@ public class ListaRezerwacji extends JFrame {
                 String nazwisko = rs.getString("NAZWISKO");
                 String pesel = rs.getString("PESEL");
                 String godzina = rs.getString("GODZINY");
+                String dzien = rs.getString("DZIEN");
 
-                reservations.add(new Object[]{imie, nazwisko, pesel, godzina});
+                reservations.add(new Object[]{imie, nazwisko, pesel, godzina, dzien});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -70,7 +71,7 @@ public class ListaRezerwacji extends JFrame {
 
         DefaultTableModel model = new DefaultTableModel(
                 reservations.toArray(new Object[0][0]),
-                new String[]{"", "", "", ""}
+                new String[]{"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień"}
         );
         rezerwacjeTable.setModel(model);
     }
