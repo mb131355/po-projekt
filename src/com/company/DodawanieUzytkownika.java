@@ -43,7 +43,7 @@ public class DodawanieUzytkownika extends JFrame {
                 if (imie.isEmpty() || nazwisko.isEmpty() || pesel.isEmpty()) {
                     JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Wszystkie pola muszą być wypełnione!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else {
                     addUserToDatabase(imie, nazwisko, pesel);
                 }
@@ -58,7 +58,7 @@ public class DodawanieUzytkownika extends JFrame {
                 if (pesel.isEmpty()) {
                     JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Podaj PESEL użytkownika do usunięcia!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else {
                     deleteUserFromDatabase(pesel);
                 }
