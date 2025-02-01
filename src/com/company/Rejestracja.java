@@ -53,9 +53,12 @@ public class Rejestracja extends JFrame {
         zarzadzajUzytkownikamiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new DodawanieUzytkownika().setVisible(true);
+                DodawanieUzytkownika oknoDodawania = new DodawanieUzytkownika();
+                oknoDodawania.setUzytkownikListener(() -> loadUsersAndHours()); // Po dodaniu użytkownika odśwież listę
+                oknoDodawania.setVisible(true);
             }
         });
+
 
         listaRejestacjiButton.addActionListener(new ActionListener() {
             @Override

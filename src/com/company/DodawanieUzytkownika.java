@@ -21,6 +21,12 @@ public class DodawanieUzytkownika extends JFrame {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    private UzytkownikListener listener;
+
+    public void setUzytkownikListener(UzytkownikListener listener) {
+        this.listener = listener;
+    }
+
     public DodawanieUzytkownika() {
         setTitle("Dodawanie Użytkownika");
         setContentPane(mainPanel);
@@ -72,6 +78,11 @@ public class DodawanieUzytkownika extends JFrame {
             int rowsInserted = stmt.executeUpdate();
             if (rowsInserted > 0) {
                 komunikatField.setText("Użytkownik został dodany!");
+
+                // Jeśli listener nie jest pusty, powiadamiamy Rejestracja o aktualizacji listy użytkowników
+                if (listener != null) {
+                    listener.onUzytkownikDodany();
+                }
             } else {
                 komunikatField.setText("Nie udało się dodać użytkownika.");
             }
@@ -79,6 +90,7 @@ public class DodawanieUzytkownika extends JFrame {
             komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
     private void deleteUserFromDatabase(String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "DELETE FROM uzytkownicy WHERE PESEL = ?";

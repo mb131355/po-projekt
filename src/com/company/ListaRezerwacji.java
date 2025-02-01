@@ -12,9 +12,6 @@ public class ListaRezerwacji extends JFrame {
     private JButton closeButton;
     private JButton usunRezerwacjeButton;
 
-
-
-
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
     private static final String PASSWORD = "";
