@@ -44,6 +44,20 @@ public class DodawanieUzytkownika extends JFrame {
             }
         });
 
+        usunButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String pesel = peselField.getText();
+
+                if (pesel.isEmpty()) {
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Podaj PESEL użytkownika do usunięcia!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                } else if (!pesel.matches("\\d{11}")) {
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    deleteUserFromDatabase(pesel);
+                }
+            }
+        });
     }
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
@@ -65,6 +79,23 @@ public class DodawanieUzytkownika extends JFrame {
             komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+    private void deleteUserFromDatabase(String pesel) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "DELETE FROM uzytkownicy WHERE PESEL = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, pesel);
+
+            int rowsDeleted = stmt.executeUpdate();
+            if (rowsDeleted > 0) {
+                komunikatField.setText("Użytkownik został usunięty!");
+            } else {
+                komunikatField.setText("Nie znaleziono użytkownika o podanym PESEL.");
+            }
+        } catch (SQLException e) {
+            komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
+        }
+    }
+
 
     public static void main(String[] args) {
         JFrame frame = new DodawanieUzytkownika();
