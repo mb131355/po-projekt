@@ -14,6 +14,7 @@ public class DodawanieUzytkownika extends JFrame {
     private JTextField nazwiskoField;
     private JTextField peselField;
     private JButton dodajButton;
+    private JButton usunButton;
     private JTextField komunikatField;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
