@@ -112,6 +112,18 @@ public class ListaRezerwacji extends JFrame {
 
     private void editReservation(String pesel, String oldHour, String newHour, String oldDay, String newDay) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            // Sprawdzamy, czy nowy termin jest już zajęty
+            String checkQuery = "SELECT COUNT(*) FROM rejestracje WHERE TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
+            PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+            checkStmt.setString(1, newHour);
+            checkStmt.setString(2, newDay);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, "Wybrana godzina i dzień są już zajęte!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                return; // Przerywamy edycję
+            }
+
+            // Jeśli termin jest wolny, aktualizujemy rezerwację
             String updateQuery = "UPDATE rejestracje SET TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
                     "WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
             PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
@@ -122,10 +134,12 @@ public class ListaRezerwacji extends JFrame {
             updateStmt.setString(5, oldDay);
             updateStmt.executeUpdate();
             JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
 
     private List<String> pobierzGodzinyZBazy() {
         List<String> godziny = new ArrayList<>();
