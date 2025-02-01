@@ -11,7 +11,7 @@ public class ListaRezerwacji extends JFrame {
     private JTable rezerwacjeTable;
     private JButton closeButton;
     private JButton usunRezerwacjeButton;
-    private JButton edytujRezerwacjeButton; // Przycisk do edytowania rezerwacji
+    private JButton edytujRezerwacjeButton;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -24,9 +24,7 @@ public class ListaRezerwacji extends JFrame {
         setSize(500, 500);
         loadReservations();
 
-        closeButton.addActionListener(e -> {
-            dispose();
-        });
+        closeButton.addActionListener(e -> dispose());
 
         usunRezerwacjeButton.addActionListener(e -> {
             int selectedRow = rezerwacjeTable.getSelectedRow();
@@ -45,7 +43,6 @@ public class ListaRezerwacji extends JFrame {
             }
         });
 
-        // Obsługa edytowania rezerwacji
         edytujRezerwacjeButton.addActionListener(e -> {
             int selectedRow = rezerwacjeTable.getSelectedRow();
             if (selectedRow == -1) {
@@ -57,66 +54,46 @@ public class ListaRezerwacji extends JFrame {
             String godzina = (String) rezerwacjeTable.getValueAt(selectedRow, 3);
             String dzien = (String) rezerwacjeTable.getValueAt(selectedRow, 4);
 
-            // Okno dialogowe do wyboru, co chcemy edytować (godzinę lub dzień)
-            String[] options = {"Godzina", "Dzień", "Oba"};
-            int choice = JOptionPane.showOptionDialog(this,
-                    "Co chcesz edytować?",
-                    "Wybór",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    null, options, options[0]);
+            List<String> godzinyLista = pobierzGodzinyZBazy();
+            String[] godzinyArray = godzinyLista.toArray(new String[0]);
+            String[] dniArray = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"};
 
-            if (choice == 0) { // Edytowanie godziny
-                String newHour = JOptionPane.showInputDialog(this, "Wprowadź nową godzinę dla rezerwacji (dotychczasowa: " + godzina + "):");
-                if (newHour != null && !newHour.isEmpty()) {
-                    editReservation(pesel, godzina, newHour, dzien, null);
-                    loadReservations();  // Odśwież tabelę
-                }
-            } else if (choice == 1) { // Edytowanie dnia
-                String newDay = JOptionPane.showInputDialog(this, "Wprowadź nowy dzień dla rezerwacji (dotychczasowy: " + dzien + "):");
-                if (newDay != null && !newDay.isEmpty()) {
-                    editReservation(pesel, godzina, null, dzien, newDay);
-                    loadReservations();  // Odśwież tabelę
-                }
-            } else if (choice == 2) { // Edytowanie zarówno godziny, jak i dnia
-                String newHour = JOptionPane.showInputDialog(this, "Wprowadź nową godzinę dla rezerwacji (dotychczasowa: " + godzina + "):");
-                String newDay = JOptionPane.showInputDialog(this, "Wprowadź nowy dzień dla rezerwacji (dotychczasowy: " + dzien + "):");
-                if (newHour != null && !newHour.isEmpty() && newDay != null && !newDay.isEmpty()) {
-                    editReservation(pesel, godzina, newHour, dzien, newDay);
-                    loadReservations();  // Odśwież tabelę
-                }
+            JComboBox<String> godzinyComboBox = new JComboBox<>(godzinyArray);
+            JComboBox<String> dniComboBox = new JComboBox<>(dniArray);
+            godzinyComboBox.setSelectedItem(godzina);
+            dniComboBox.setSelectedItem(dzien);
+
+            JPanel panel = new JPanel();
+            panel.add(new JLabel("Nowa godzina:"));
+            panel.add(godzinyComboBox);
+            panel.add(new JLabel("Nowy dzień:"));
+            panel.add(dniComboBox);
+
+            int result = JOptionPane.showConfirmDialog(this, panel, "Edytuj rezerwację", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                String newHour = (String) godzinyComboBox.getSelectedItem();
+                String newDay = (String) dniComboBox.getSelectedItem();
+                editReservation(pesel, godzina, newHour, dzien, newDay);
+                loadReservations();
             }
         });
     }
 
     private void loadReservations() {
         List<Object[]> reservations = new ArrayList<>();
-
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-
             while (rs.next()) {
-                String imie = rs.getString("IMIE");
-                String nazwisko = rs.getString("NAZWISKO");
-                String pesel = rs.getString("PESEL");
-                String godzina = rs.getString("GODZINY");
-                String dzien = rs.getString("DZIEN");
-
-                reservations.add(new Object[]{imie, nazwisko, pesel, godzina, dzien});
+                reservations.add(new Object[]{rs.getString("IMIE"), rs.getString("NAZWISKO"), rs.getString("PESEL"), rs.getString("GODZINY"), rs.getString("DZIEN")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        DefaultTableModel model = new DefaultTableModel(
-                reservations.toArray(new Object[0][0]),
-                new String[]{"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień"}
-        );
-        rezerwacjeTable.setModel(model);
+        rezerwacjeTable.setModel(new DefaultTableModel(reservations.toArray(new Object[0][0]), new String[]{"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień"}));
     }
 
     private void deleteReservation(String pesel, String godzina) {
@@ -126,78 +103,46 @@ public class ListaRezerwacji extends JFrame {
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, pesel);
             stmt.setString(2, godzina);
-
-            int rowsDeleted = stmt.executeUpdate();
-            if (rowsDeleted > 0) {
-                JOptionPane.showMessageDialog(this, "Rezerwacja została usunięta!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Nie udało się usunąć rezerwacji.", "Błąd", JOptionPane.ERROR_MESSAGE);
-            }
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Rezerwacja została usunięta!");
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Błąd podczas usuwania rezerwacji: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Metoda edytująca rezerwację
     private void editReservation(String pesel, String oldHour, String newHour, String oldDay, String newDay) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Pobieramy ID użytkownika
-            String userQuery = "SELECT ID FROM uzytkownicy WHERE PESEL = ?";
-            PreparedStatement userStmt = conn.prepareStatement(userQuery);
-            userStmt.setString(1, pesel);
-            ResultSet rsUser = userStmt.executeQuery();
-            if (rsUser.next()) {
-                int userId = rsUser.getInt("ID");
+            String updateQuery = "UPDATE rejestracje SET TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
+                    "WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
+            PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+            updateStmt.setString(1, newHour);
+            updateStmt.setString(2, newDay);
+            updateStmt.setString(3, pesel);
+            updateStmt.setString(4, oldHour);
+            updateStmt.setString(5, oldDay);
+            updateStmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-                // Pobieramy ID starego terminu
-                String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
-                PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
-                hourStmt.setString(1, oldHour);
-                ResultSet rsHour = hourStmt.executeQuery();
-                if (rsHour.next()) {
-                    int oldHourId = rsHour.getInt("ID");
-
-                    // Pobieramy ID nowego terminu (jeśli godzina została zmieniona)
-                    Integer newHourId = null;
-                    if (newHour != null) {
-                        PreparedStatement newHourStmt = conn.prepareStatement(hourQuery);
-                        newHourStmt.setString(1, newHour);
-                        ResultSet rsNewHour = newHourStmt.executeQuery();
-                        if (rsNewHour.next()) {
-                            newHourId = rsNewHour.getInt("ID");
-                        }
-                    }
-
-                    // Aktualizujemy rejestrację
-                    String updateQuery = "UPDATE rejestracje SET TERMIN_ID = ?, DZIEN = ? WHERE UZYTKOWNIK_ID = ? AND TERMIN_ID = ? AND DZIEN = ?";
-                    PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-                    if (newHourId != null) {
-                        updateStmt.setInt(1, newHourId);
-                    } else {
-                        updateStmt.setInt(1, oldHourId); // Jeśli godzina nie została zmieniona
-                    }
-                    updateStmt.setString(2, (newDay != null) ? newDay : oldDay); // Dzień (jeśli zmieniony)
-                    updateStmt.setInt(3, userId);
-                    updateStmt.setInt(4, oldHourId);
-                    updateStmt.setString(5, oldDay);
-
-                    int rowsUpdated = updateStmt.executeUpdate();
-                    if (rowsUpdated > 0) {
-                        JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować rezerwacji.", "Błąd", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
+    private List<String> pobierzGodzinyZBazy() {
+        List<String> godziny = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "SELECT DISTINCT GODZINY FROM terminy ORDER BY GODZINY";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                godziny.add(rs.getString("GODZINY"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Błąd podczas edytowania rezerwacji: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
         }
+        return godziny;
     }
 
     public static void main(String[] args) {
-        JFrame frame = new ListaRezerwacji();
-        frame.setVisible(true);
+        new ListaRezerwacji().setVisible(true);
     }
 }
