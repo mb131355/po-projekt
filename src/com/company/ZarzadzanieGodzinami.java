@@ -20,6 +20,9 @@ public class ZarzadzanieGodzinami extends JFrame {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    private GodzinaListener listener;
+
+
     public ZarzadzanieGodzinami() {
         setTitle("Zarządzanie Godzinami");
         setContentPane(mainPanel);
@@ -41,6 +44,10 @@ public class ZarzadzanieGodzinami extends JFrame {
         });
     }
 
+    public void setGodzinaListener(GodzinaListener listener) {
+        this.listener = listener;
+    }
+
     private void addHour() {
         String godzinaStartowa = godzinaStart.getText();
         String godzinaKoncowa = godzinaKoniec.getText();
@@ -53,6 +60,9 @@ public class ZarzadzanieGodzinami extends JFrame {
             int rowsInserted = stmt.executeUpdate();
             if (rowsInserted > 0) {
                 wynik.setText("Dodano godzinę: " + godzinaStartowa + " - " + godzinaKoncowa);
+                if (listener != null) {
+                    listener.onGodzinaDodana();
+                }
             } else {
                 wynik.setText("Nie udało się dodać godziny.");
             }
@@ -73,6 +83,9 @@ public class ZarzadzanieGodzinami extends JFrame {
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
                 wynik.setText("Usunięto godzinę: " + godzinaStartowa + " - " + godzinaKoncowa);
+                if (listener != null) {
+                    listener.onGodzinaUsunieta();
+                }
             } else {
                 wynik.setText("Nie znaleziono godziny do usunięcia.");
             }
@@ -81,3 +94,4 @@ public class ZarzadzanieGodzinami extends JFrame {
         }
     }
 }
+

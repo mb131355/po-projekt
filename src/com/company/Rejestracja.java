@@ -21,6 +21,11 @@ public class Rejestracja extends JFrame {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    private GodzinaListener listener;
+    public void setGodzinaListener(GodzinaListener listener) {
+        this.listener = listener;
+    }
+
     public Rejestracja() {
         setTitle("Rejestracja");
         setContentPane(panel1);
@@ -46,9 +51,22 @@ public class Rejestracja extends JFrame {
         zarzadzajGodzinamiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ZarzadzanieGodzinami().setVisible(true);
+                ZarzadzanieGodzinami oknoGodzin = new ZarzadzanieGodzinami();
+                oknoGodzin.setGodzinaListener(new GodzinaListener() {
+                    @Override
+                    public void onGodzinaDodana() {
+                        loadUsersAndHours();  // Po dodaniu godziny odśwież listę godzin
+                    }
+
+                    @Override
+                    public void onGodzinaUsunieta() {
+                        loadUsersAndHours();  // Po usunięciu godziny odśwież listę godzin
+                    }
+                });
+                oknoGodzin.setVisible(true);
             }
         });
+
 
         zarzadzajUzytkownikamiButton.addActionListener(new ActionListener() {
             @Override
