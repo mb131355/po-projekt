@@ -68,7 +68,6 @@ public class DodawanieUzytkownika extends JFrame {
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Przygotowanie zapytania SQL
             String query = "INSERT INTO uzytkownicy (IMIE, NAZWISKO, PESEL) VALUES (?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, imie);
@@ -79,7 +78,6 @@ public class DodawanieUzytkownika extends JFrame {
             if (rowsInserted > 0) {
                 komunikatField.setText("Użytkownik został dodany!");
 
-                // Jeśli listener nie jest pusty, powiadamiamy Rejestracja o aktualizacji listy użytkowników
                 if (listener != null) {
                     listener.onUzytkownikDodany();
                 }
