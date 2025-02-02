@@ -36,7 +36,6 @@ public class Rejestracja extends JFrame {
 
         loadUsersAndHours();
 
-        // Dodanie dni tygodnia do JComboBox
         String[] dni = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"};
         dniTygodnia.setModel(new DefaultComboBoxModel<>(dni));
 
@@ -62,12 +61,12 @@ public class Rejestracja extends JFrame {
                 oknoGodzin.setGodzinaListener(new GodzinaListener() {
                     @Override
                     public void onGodzinaDodana() {
-                        loadUsersAndHours();  // Po dodaniu godziny odśwież listę godzin
+                        loadUsersAndHours();
                     }
 
                     @Override
                     public void onGodzinaUsunieta() {
-                        loadUsersAndHours();  // Po usunięciu godziny odśwież listę godzin
+                        loadUsersAndHours();
                     }
                 });
                 oknoGodzin.setVisible(true);
@@ -78,7 +77,7 @@ public class Rejestracja extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DodawanieUzytkownika oknoDodawania = new DodawanieUzytkownika();
-                oknoDodawania.setUzytkownikListener(() -> loadUsersAndHours()); // Po dodaniu użytkownika odśwież listę
+                oknoDodawania.setUzytkownikListener(() -> loadUsersAndHours());
                 oknoDodawania.setVisible(true);
             }
         });
@@ -123,7 +122,6 @@ public class Rejestracja extends JFrame {
     private void registerUser(String userName, String selectedHour, String selectDay) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
-            // Sprawdzenie, czy użytkownik istnieje
             String userQuery = "SELECT ID FROM uzytkownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement userStmt = conn.prepareStatement(userQuery);
             userStmt.setString(1, userName);
@@ -134,7 +132,6 @@ public class Rejestracja extends JFrame {
             }
             int userId = rsUser.getInt("ID");
 
-            // Sprawdzenie, czy termin istnieje
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
@@ -145,29 +142,27 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
-            // Sprawdzanie, czy ktoś inny jest już zapisany na ten termin i dzień
             String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, hourId);
-            checkStmt.setString(2, selectDay);  // Sprawdzamy tylko termin i dzień
+            checkStmt.setString(2, selectDay);
             ResultSet rsCheck = checkStmt.executeQuery();
 
             if (rsCheck.next()) {
                 wynik.setText("Na ten termin i dzień jest już ktoś zapisany!");
-                return;  // Przerwanie rejestracji, jeśli ktoś inny jest już zapisany
+                return;
             }
 
-            // Rejestracja użytkownika na nowy termin
             String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN) VALUES (?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, hourId);
-            insertStmt.setString(3, selectDay);  // Przechowujemy dzień w bazie
+            insertStmt.setString(3, selectDay);
             int rowsInserted = insertStmt.executeUpdate();
 
             if (rowsInserted > 0) {
                 wynik.setText("Rejestracja zakończona!");
-                loadUsersAndHours();  // Odśwież listy
+                loadUsersAndHours();
             } else {
                 wynik.setText("Nie udało się zarejestrować.");
             }
