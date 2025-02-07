@@ -17,6 +17,9 @@ public class Rejestracja extends JFrame {
     private JTextField wynik;
     private JButton listaRejestacjiButton;
     private JComboBox<String> dniTygodnia;
+    private JButton dodajPracownikaButton;
+    private JComboBox wybierzPracownika;
+
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
