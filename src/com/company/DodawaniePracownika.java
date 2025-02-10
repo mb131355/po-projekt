@@ -72,7 +72,7 @@ public class DodawaniePracownika extends JFrame {
             if (rowsInserted > 0) {
                 komunikatField.setText("Pracownik został dodany!");
                 if (listener != null) {
-                    listener.onPracownikDodany();
+                    listener.onPracownikDodany(); // Informujemy Rejestracja o zmianie
                 }
             } else {
                 komunikatField.setText("Nie udało się dodać pracownika.");
@@ -81,6 +81,7 @@ public class DodawaniePracownika extends JFrame {
             komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
     private void deletePracownikFromDatabase(String imie, String nazwisko) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {

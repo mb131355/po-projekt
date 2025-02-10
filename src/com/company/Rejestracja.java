@@ -102,9 +102,11 @@ public class Rejestracja extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DodawaniePracownika oknoPracownika = new DodawaniePracownika();
+                oknoPracownika.setPracownikListener(() -> loadUsersAndHours()); // Aktualizacja listy po dodaniu pracownika
                 oknoPracownika.setVisible(true);
             }
         });
+
 
         listaRejestacjiButton.addActionListener(new ActionListener() {
             @Override
@@ -117,8 +119,10 @@ public class Rejestracja extends JFrame {
     private void loadUsersAndHours() {
         List<String> users = new ArrayList<>();
         List<String> hours = new ArrayList<>();
+        List<String> workers = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            // Pobieranie użytkowników
             String queryUsers = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy";
             Statement stmtUsers = conn.createStatement();
             ResultSet rsUsers = stmtUsers.executeQuery(queryUsers);
@@ -127,6 +131,7 @@ public class Rejestracja extends JFrame {
                 users.add(user);
             }
 
+            // Pobieranie godzin pracy
             String queryHours = "SELECT GODZINY FROM terminy";
             Statement stmtHours = conn.createStatement();
             ResultSet rsHours = stmtHours.executeQuery(queryHours);
@@ -135,16 +140,35 @@ public class Rejestracja extends JFrame {
                 hours.add(hour);
             }
 
+            // Pobieranie pracowników
+            String queryWorkers = "SELECT IMIE, NAZWISKO FROM pracownicy";
+            Statement stmtWorkers = conn.createStatement();
+            ResultSet rsWorkers = stmtWorkers.executeQuery(queryWorkers);
+            while (rsWorkers.next()) {
+                String worker = rsWorkers.getString("IMIE") + " " + rsWorkers.getString("NAZWISKO");
+                workers.add(worker);
+            }
+
         } catch (SQLException e) {
             wynik.setText("Błąd połączenia z bazą danych: " + e.getMessage());
         }
 
         userComboBox.setModel(new DefaultComboBoxModel<>(users.toArray(new String[0])));
         godzinyPracy.setModel(new DefaultComboBoxModel<>(hours.toArray(new String[0])));
+        wybierzPracownika.setModel(new DefaultComboBoxModel<>(workers.toArray(new String[0])));
     }
 
+
     private void registerUser(String userName, String selectedHour, String selectedDate) {
+        String selectedWorker = (String) wybierzPracownika.getSelectedItem();
+
+        if (selectedWorker == null || selectedWorker.isEmpty()) {
+            wynik.setText("Musisz wybrać pracownika!");
+            return;
+        }
+
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            // Pobieranie ID użytkownika
             String[] userParts = userName.split(" \\(Pesel:");
             String fullName = userParts[0];
 
@@ -158,6 +182,7 @@ public class Rejestracja extends JFrame {
             }
             int userId = rsUser.getInt("ID");
 
+            // Pobieranie ID terminu
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
@@ -168,6 +193,18 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
+            // Pobieranie ID pracownika
+            String workerQuery = "SELECT ID FROM pracownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
+            PreparedStatement workerStmt = conn.prepareStatement(workerQuery);
+            workerStmt.setString(1, selectedWorker);
+            ResultSet rsWorker = workerStmt.executeQuery();
+            if (!rsWorker.next()) {
+                wynik.setText("Nie znaleziono pracownika!");
+                return;
+            }
+            int workerId = rsWorker.getInt("ID");
+
+            // Sprawdzenie czy termin jest wolny
             String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, hourId);
@@ -179,11 +216,13 @@ public class Rejestracja extends JFrame {
                 return;
             }
 
-            String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN) VALUES (?, ?, ?)";
+            // Wstawianie rejestracji z uwzględnieniem pracownika
+            String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN, PRACOWNIK_ID) VALUES (?, ?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, hourId);
             insertStmt.setString(3, selectedDate);
+            insertStmt.setInt(4, workerId);
             int rowsInserted = insertStmt.executeUpdate();
 
             if (rowsInserted > 0) {
@@ -197,6 +236,7 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
