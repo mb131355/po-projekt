@@ -30,6 +30,12 @@
               <model/>
             </properties>
           </component>
+          <component id="dateSpinner" class="javax.swing.JSpinner" binding="dateSpinner">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+          </component>
           <component id="OKButton" class="javax.swing.JButton" binding="OKButton">
             <constraints>
               <grid row="5" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -69,12 +75,6 @@
             <properties>
               <text value="Lista rezerwacji"/>
             </properties>
-          </component>
-          <component id="a0b37" class="javax.swing.JComboBox" binding="dniTygodnia">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
           </component>
           <component id="e85c8" class="javax.swing.JButton" binding="dodajPracownikaButton" default-binding="true">
             <constraints>

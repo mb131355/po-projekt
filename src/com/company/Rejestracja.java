@@ -4,8 +4,11 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.Calendar;
 
 public class Rejestracja extends JFrame {
     private JPanel panel1;
@@ -16,10 +19,9 @@ public class Rejestracja extends JFrame {
     private JButton zarzadzajUzytkownikamiButton;
     private JTextField wynik;
     private JButton listaRejestacjiButton;
-    private JComboBox<String> dniTygodnia;
     private JButton dodajPracownikaButton;
     private JComboBox wybierzPracownika;
-
+    private JSpinner dateSpinner;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -35,24 +37,35 @@ public class Rejestracja extends JFrame {
         setTitle("Rejestracja");
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        pack();
+
+        // Konfiguracja JSpinner dla daty
+        SpinnerDateModel dateModel = new SpinnerDateModel(new Date(),
+                null,
+                null,
+                Calendar.DAY_OF_MONTH);
+        dateSpinner.setModel(dateModel);
+
+        // Formatowanie wyglądu daty w JSpinner
+        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd");
+        dateSpinner.setEditor(dateEditor);
 
         loadUsersAndHours();
 
-        String[] dni = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"};
-        dniTygodnia.setModel(new DefaultComboBoxModel<>(dni));
+        pack();
 
         OKButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedUser = (String) userComboBox.getSelectedItem();
                 String selectedHour = (String) godzinyPracy.getSelectedItem();
-                String selectDay = (String) dniTygodnia.getSelectedItem();
+                Date selectedDate = (Date) dateSpinner.getValue();
 
-                if (selectedUser == null || selectedHour == null || selectDay == null) {
+                if (selectedUser == null || selectedHour == null || selectedDate == null) {
                     wynik.setText("Wszystkie pola muszą być wypełnione!");
                 } else {
-                    registerUser(selectedUser, selectedHour, selectDay);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String formattedDate = sdf.format(selectedDate);
+                    registerUser(selectedUser, selectedHour, formattedDate);
                 }
             }
         });
@@ -130,12 +143,14 @@ public class Rejestracja extends JFrame {
         godzinyPracy.setModel(new DefaultComboBoxModel<>(hours.toArray(new String[0])));
     }
 
-    private void registerUser(String userName, String selectedHour, String selectDay) {
+    private void registerUser(String userName, String selectedHour, String selectedDate) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String[] userParts = userName.split(" \\(Pesel:");
+            String fullName = userParts[0];
 
             String userQuery = "SELECT ID FROM uzytkownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement userStmt = conn.prepareStatement(userQuery);
-            userStmt.setString(1, userName);
+            userStmt.setString(1, fullName);
             ResultSet rsUser = userStmt.executeQuery();
             if (!rsUser.next()) {
                 wynik.setText("Nie znaleziono użytkownika!");
@@ -156,7 +171,7 @@ public class Rejestracja extends JFrame {
             String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, hourId);
-            checkStmt.setString(2, selectDay);
+            checkStmt.setString(2, selectedDate);
             ResultSet rsCheck = checkStmt.executeQuery();
 
             if (rsCheck.next()) {
@@ -168,7 +183,7 @@ public class Rejestracja extends JFrame {
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, hourId);
-            insertStmt.setString(3, selectDay);
+            insertStmt.setString(3, selectedDate);
             int rowsInserted = insertStmt.executeUpdate();
 
             if (rowsInserted > 0) {
@@ -183,9 +198,9 @@ public class Rejestracja extends JFrame {
         }
     }
 
-
     public static void main(String[] args) {
-        JFrame frame = new Rejestracja();
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            new Rejestracja().setVisible(true);
+        });
     }
 }
