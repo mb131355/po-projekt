@@ -85,6 +85,14 @@ public class Rejestracja extends JFrame {
             }
         });
 
+        dodajPracownikaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DodawaniePracownika oknoPracownika = new DodawaniePracownika();
+                oknoPracownika.setVisible(true);
+            }
+        });
+
         listaRejestacjiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -98,11 +106,11 @@ public class Rejestracja extends JFrame {
         List<String> hours = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String queryUsers = "SELECT IMIE, NAZWISKO FROM uzytkownicy";
+            String queryUsers = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy";
             Statement stmtUsers = conn.createStatement();
             ResultSet rsUsers = stmtUsers.executeQuery(queryUsers);
             while (rsUsers.next()) {
-                String user = rsUsers.getString("IMIE") + " " + rsUsers.getString("NAZWISKO");
+                String user = rsUsers.getString("IMIE") + " " + rsUsers.getString("NAZWISKO") + " (Pesel: " + rsUsers.getString("PESEL") + ")";
                 users.add(user);
             }
 
