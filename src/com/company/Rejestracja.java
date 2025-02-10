@@ -39,11 +39,18 @@ public class Rejestracja extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Konfiguracja JSpinner dla daty
-        SpinnerDateModel dateModel = new SpinnerDateModel(new Date(),
-                null,
-                null,
-                Calendar.DAY_OF_MONTH);
+        // Pobranie dzisiejszej daty
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date today = calendar.getTime();
+
+// Konfiguracja JSpinner dla daty z ograniczeniem minimalnej daty (nie można wybrać przeszłości)
+        SpinnerDateModel dateModel = new SpinnerDateModel(today, today, null, Calendar.DAY_OF_MONTH);
         dateSpinner.setModel(dateModel);
+
 
         // Formatowanie wyglądu daty w JSpinner
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd");
@@ -62,13 +69,28 @@ public class Rejestracja extends JFrame {
 
                 if (selectedUser == null || selectedHour == null || selectedDate == null) {
                     wynik.setText("Wszystkie pola muszą być wypełnione!");
-                } else {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String formattedDate = sdf.format(selectedDate);
-                    registerUser(selectedUser, selectedHour, formattedDate);
+                    return;
                 }
+
+                // Pobranie dzisiejszej daty do porównania
+                Calendar calendarNow = Calendar.getInstance();
+                calendarNow.set(Calendar.HOUR_OF_DAY, 0);
+                calendarNow.set(Calendar.MINUTE, 0);
+                calendarNow.set(Calendar.SECOND, 0);
+                calendarNow.set(Calendar.MILLISECOND, 0);
+                Date today = calendarNow.getTime();
+
+                if (selectedDate.before(today)) {
+                    wynik.setText("Nie można wybrać przeszłej daty!");
+                    return;
+                }
+
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String formattedDate = sdf.format(selectedDate);
+                registerUser(selectedUser, selectedHour, formattedDate);
             }
         });
+
 
         zarzadzajGodzinamiButton.addActionListener(new ActionListener() {
             @Override
