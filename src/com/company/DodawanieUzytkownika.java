@@ -3,10 +3,7 @@ package com.company;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DodawanieUzytkownika extends JFrame {
     private JPanel mainPanel;
@@ -68,21 +65,37 @@ public class DodawanieUzytkownika extends JFrame {
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            String query = "INSERT INTO uzytkownicy (IMIE, NAZWISKO, PESEL) VALUES (?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, imie);
-            stmt.setString(2, nazwisko);
-            stmt.setString(3, pesel);
-
-            int rowsInserted = stmt.executeUpdate();
-            if (rowsInserted > 0) {
-                komunikatField.setText("Użytkownik został dodany!");
-
-                if (listener != null) {
-                    listener.onUzytkownikDodany();
+            // Sprawdzenie, czy użytkownik z podanym PESEL już istnieje
+            String checkQuery = "SELECT COUNT(*) FROM uzytkownicy WHERE PESEL = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+                checkStmt.setString(1, pesel);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    if (count > 0) {
+                        komunikatField.setText("Użytkownik z tym PESEL już istnieje!");
+                        return; // Zakończenie metody, ponieważ PESEL już jest w bazie
+                    }
                 }
-            } else {
-                komunikatField.setText("Nie udało się dodać użytkownika.");
+            }
+
+            // Dodawanie użytkownika, gdy PESEL nie istnieje
+            String query = "INSERT INTO uzytkownicy (IMIE, NAZWISKO, PESEL) VALUES (?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, imie);
+                stmt.setString(2, nazwisko);
+                stmt.setString(3, pesel);
+
+                int rowsInserted = stmt.executeUpdate();
+                if (rowsInserted > 0) {
+                    komunikatField.setText("Użytkownik został dodany!");
+
+                    if (listener != null) {
+                        listener.onUzytkownikDodany();
+                    }
+                } else {
+                    komunikatField.setText("Nie udało się dodać użytkownika.");
+                }
             }
         } catch (SQLException e) {
             komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
@@ -105,7 +118,6 @@ public class DodawanieUzytkownika extends JFrame {
             komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
         }
     }
-
 
     public static void main(String[] args) {
         JFrame frame = new DodawanieUzytkownika();
