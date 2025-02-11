@@ -1,14 +1,13 @@
 package com.company;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListaRezerwacji extends JFrame {
+    // Komponenty zostały zadeklarowane i powiązane z XML-em
     private JPanel panel1;
     private JTable rezerwacjeTable;
     private JButton closeButton;
@@ -26,7 +25,7 @@ public class ListaRezerwacji extends JFrame {
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Tworzymy połączenie do bazy tylko raz
+        // Nawiązanie połączenia z bazą
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
@@ -35,38 +34,14 @@ public class ListaRezerwacji extends JFrame {
             return;
         }
 
-        // Tworzymy tabelę z nagłówkami
-        String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
-        DefaultTableModel model = new DefaultTableModel(null, columnNames);
-        rezerwacjeTable = new JTable(model);
-
-        // Poprawa wyglądu tabeli
-        stylizujTabele();
-
-        // Dodajemy JScrollPane, aby dodać przewijanie
-        JScrollPane scrollPane = new JScrollPane(rezerwacjeTable);
-        panel1 = new JPanel(new BorderLayout());
-        panel1.add(scrollPane, BorderLayout.CENTER);
-
-        // Tworzenie przycisków
-        JPanel buttonPanel = new JPanel();
-        closeButton = new JButton("Zamknij");
-        usunRezerwacjeButton = new JButton("Usuń rezerwację");
-        edytujRezerwacjeButton = new JButton("Edytuj rezerwację");
-
-        buttonPanel.add(usunRezerwacjeButton);
-        buttonPanel.add(edytujRezerwacjeButton);
-        buttonPanel.add(closeButton);
-
-        panel1.add(buttonPanel, BorderLayout.SOUTH);
+        // Ustawiamy główny panel – jest on już skonfigurowany w XML
         setContentPane(panel1);
 
-        // Ładowanie danych do tabeli
+        // Załadowanie danych do tabeli
         loadReservations();
 
-        // Obsługa przycisków
+        // Dodanie listenerów – nie zmieniamy właściwości komponentów
         closeButton.addActionListener(e -> dispose());
-
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
     }
@@ -76,7 +51,8 @@ public class ListaRezerwacji extends JFrame {
         String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
 
         try {
-            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN, p.IMIE AS PRACOWNIK_IMIE, p.NAZWISKO AS PRACOWNIK_NAZWISKO " +
+            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN, " +
+                    "p.IMIE AS PRACOWNIK_IMIE, p.NAZWISKO AS PRACOWNIK_NAZWISKO " +
                     "FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID " +
@@ -99,26 +75,9 @@ public class ListaRezerwacji extends JFrame {
             e.printStackTrace();
         }
 
+        // Ustawienie modelu tabeli – nie nadpisujemy przy tym stylów, tylko aktualizujemy dane
         DefaultTableModel model = new DefaultTableModel(reservations.toArray(new Object[0][0]), columnNames);
         rezerwacjeTable.setModel(model);
-        stylizujTabele();
-    }
-
-
-    private void stylizujTabele() {
-        rezerwacjeTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        rezerwacjeTable.getTableHeader().setReorderingAllowed(false);
-        rezerwacjeTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        rezerwacjeTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        rezerwacjeTable.getTableHeader().setForeground(Color.BLACK);
-        rezerwacjeTable.setRowHeight(25);
-
-        // Centrowanie tekstu w wybranych kolumnach
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        rezerwacjeTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-        rezerwacjeTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        rezerwacjeTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
     }
 
     private void usunRezerwacje() {
@@ -131,10 +90,12 @@ public class ListaRezerwacji extends JFrame {
         String pesel = (String) rezerwacjeTable.getValueAt(selectedRow, 2);
         String godzina = (String) rezerwacjeTable.getValueAt(selectedRow, 3);
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Czy na pewno chcesz usunąć tę rezerwację?", "Potwierdzenie", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Czy na pewno chcesz usunąć tę rezerwację?",
+                "Potwierdzenie", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                String query = "DELETE FROM rejestracje WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) " +
+                String query = "DELETE FROM rejestracje WHERE UZYTKOWNIK_ID = " +
+                        "(SELECT ID FROM uzytkownicy WHERE PESEL = ?) " +
                         "AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?)";
                 PreparedStatement stmt = conn.prepareStatement(query);
                 stmt.setString(1, pesel);
@@ -155,27 +116,26 @@ public class ListaRezerwacji extends JFrame {
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Czy na pewno chcesz edytować tę rezerwację?", "Potwierdzenie", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Czy na pewno chcesz edytować tę rezerwację?",
+                "Potwierdzenie", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
 
-        // Pobranie aktualnych danych
+        // Pobranie aktualnych danych rezerwacji
         String pesel = (String) rezerwacjeTable.getValueAt(selectedRow, 2);
         String oldHour = (String) rezerwacjeTable.getValueAt(selectedRow, 3);
         String oldDay = (String) rezerwacjeTable.getValueAt(selectedRow, 4);
 
-        // Pobranie listy dostępnych godzin
+        // Pobranie listy dostępnych godzin z bazy
         List<String> godzinyLista = pobierzGodzinyZBazy();
         String[] godzinyArray = godzinyLista.toArray(new String[0]);
 
         JComboBox<String> godzinyComboBox = new JComboBox<>(godzinyArray);
         JTextField dataTextField = new JTextField(oldDay);
 
-
-
-
-        JPanel panel = new JPanel();
+        // Używamy prostego układu wewnętrznego – nie nadpisujemy stylów z XML
+        JPanel panel = new JPanel(new java.awt.GridLayout(2, 2, 5, 5));
         panel.add(new JLabel("Nowa godzina:"));
         panel.add(godzinyComboBox);
         panel.add(new JLabel("Nowa data (yyyy-mm-dd):"));
@@ -187,7 +147,8 @@ public class ListaRezerwacji extends JFrame {
             String newDay = dataTextField.getText().trim();
 
             if (newHour.equals(oldHour) && newDay.equals(oldDay)) {
-                JOptionPane.showMessageDialog(this, "Nie dokonano żadnych zmian.", "Informacja", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Nie dokonano żadnych zmian.", "Informacja",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -195,21 +156,23 @@ public class ListaRezerwacji extends JFrame {
         }
     }
 
-
     private void editReservation(String pesel, String oldHour, String newHour, String oldDay, String newDay) {
         try {
-            String checkQuery = "SELECT COUNT(*) FROM rejestracje WHERE TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
+            String checkQuery = "SELECT COUNT(*) FROM rejestracje WHERE TERMIN_ID = " +
+                    "(SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setString(1, newHour);
             checkStmt.setString(2, newDay);
             ResultSet rs = checkStmt.executeQuery();
 
             if (rs.next() && rs.getInt(1) > 0) {
-                JOptionPane.showMessageDialog(this, "Wybrana godzina i dzień są już zajęte!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Wybrana godzina i dzień są już zajęte!",
+                        "Błąd", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            String updateQuery = "UPDATE rejestracje SET TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
+            String updateQuery = "UPDATE rejestracje SET TERMIN_ID = " +
+                    "(SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
                     "WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) " +
                     "AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
             PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
@@ -225,15 +188,17 @@ public class ListaRezerwacji extends JFrame {
                 JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
                 loadReservations();
             } else {
-                JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować rezerwacji!",
+                        "Błąd", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Błąd podczas aktualizacji rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Błąd podczas aktualizacji rezerwacji!",
+                    "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-private List<String> pobierzGodzinyZBazy() {
+    private List<String> pobierzGodzinyZBazy() {
         List<String> godziny = new ArrayList<>();
         try {
             String query = "SELECT DISTINCT GODZINY FROM terminy ORDER BY GODZINY";
@@ -247,6 +212,7 @@ private List<String> pobierzGodzinyZBazy() {
         }
         return godziny;
     }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ListaRezerwacji().setVisible(true));
     }

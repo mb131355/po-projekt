@@ -7,6 +7,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class ZarzadzanieGodzinami extends JFrame {
     private JPanel mainPanel;
@@ -21,6 +24,7 @@ public class ZarzadzanieGodzinami extends JFrame {
     private static final String PASSWORD = "";
 
     private GodzinaListener listener;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
 
     public ZarzadzanieGodzinami() {
@@ -49,8 +53,21 @@ public class ZarzadzanieGodzinami extends JFrame {
     }
 
     private void addHour() {
-        String godzinaStartowa = godzinaStart.getText();
-        String godzinaKoncowa = godzinaKoniec.getText();
+        String godzinaStartowa = godzinaStart.getText().trim();
+        String godzinaKoncowa = godzinaKoniec.getText().trim();
+
+        if (!isValidTimeFormat(godzinaStartowa) || !isValidTimeFormat(godzinaKoncowa)) {
+            wynik.setText("Podaj godziny w formacie HH:MM");
+            return;
+        }
+
+        LocalTime start = LocalTime.parse(godzinaStartowa, FORMATTER);
+        LocalTime end = LocalTime.parse(godzinaKoncowa, FORMATTER);
+
+        if (!start.isBefore(end)) {
+            wynik.setText("Godzina początkowa musi być wcześniejsza niż końcowa.");
+            return;
+        }
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "INSERT INTO terminy (GODZINY) VALUES (?)";
@@ -72,8 +89,13 @@ public class ZarzadzanieGodzinami extends JFrame {
     }
 
     private void deleteHour() {
-        String godzinaStartowa = godzinaStart.getText();
-        String godzinaKoncowa = godzinaKoniec.getText();
+        String godzinaStartowa = godzinaStart.getText().trim();
+        String godzinaKoncowa = godzinaKoniec.getText().trim();
+
+        if (!isValidTimeFormat(godzinaStartowa) || !isValidTimeFormat(godzinaKoncowa)) {
+            wynik.setText("Podaj godziny w formacie HH:MM");
+            return;
+        }
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "DELETE FROM terminy WHERE GODZINY = ?";
@@ -93,5 +115,14 @@ public class ZarzadzanieGodzinami extends JFrame {
             wynik.setText("Błąd usuwania z bazy: " + e.getMessage());
         }
     }
+    private boolean isValidTimeFormat(String time) {
+        try {
+            LocalTime.parse(time, FORMATTER);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
 }
+
 

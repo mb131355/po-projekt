@@ -13,7 +13,9 @@
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-3546896"/>
+        </properties>
         <border type="none" title=""/>
         <children>
           <component id="userComboBox" class="javax.swing.JComboBox" binding="userComboBox">
@@ -49,6 +51,7 @@
               </grid>
             </constraints>
             <properties>
+              <background color="-14577467"/>
               <text value="OK"/>
             </properties>
           </component>
@@ -67,6 +70,7 @@
               </grid>
             </constraints>
             <properties>
+              <background color="-14577467"/>
               <text value="Zarządzaj Użytkownikami"/>
             </properties>
           </component>
@@ -85,6 +89,7 @@
               </grid>
             </constraints>
             <properties>
+              <background color="-14577467"/>
               <text value="Lista rezerwacji"/>
             </properties>
           </component>
@@ -95,6 +100,7 @@
               </grid>
             </constraints>
             <properties>
+              <background color="-14577467"/>
               <text value="Zarządzaj Godzinami"/>
             </properties>
           </component>
@@ -105,6 +111,7 @@
               </grid>
             </constraints>
             <properties>
+              <background color="-14577467"/>
               <text value="Dodaj pracownika"/>
             </properties>
           </component>
