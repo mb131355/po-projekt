@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListaRezerwacji extends JFrame {
-    // Komponenty zostały zadeklarowane i powiązane z XML-em
     private JPanel panel1;
     private JTable rezerwacjeTable;
     private JButton closeButton;
@@ -25,7 +24,6 @@ public class ListaRezerwacji extends JFrame {
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Nawiązanie połączenia z bazą
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
@@ -34,18 +32,13 @@ public class ListaRezerwacji extends JFrame {
             return;
         }
 
-        // Ustawiamy główny panel – jest on już skonfigurowany w XML
         setContentPane(panel1);
 
-        // Załadowanie danych do tabeli
         loadReservations();
 
-        // Dodanie listenerów – nie zmieniamy właściwości komponentów
         closeButton.addActionListener(e -> dispose());
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
-
-
     }
 
     private void loadReservations() {
@@ -59,7 +52,7 @@ public class ListaRezerwacji extends JFrame {
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID " +
                     "JOIN pracownicy p ON r.PRACOWNIK_ID = p.ID " +
-                    "ORDER BY r.DZIEN ASC, t.GODZINY ASC";  // sortowanie według daty, a potem godziny
+                    "ORDER BY r.DZIEN ASC, t.GODZINY ASC";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
@@ -81,7 +74,6 @@ public class ListaRezerwacji extends JFrame {
         DefaultTableModel model = new DefaultTableModel(reservations.toArray(new Object[0][0]), columnNames);
         rezerwacjeTable.setModel(model);
     }
-
 
     private void usunRezerwacje() {
         int selectedRow = rezerwacjeTable.getSelectedRow();
@@ -125,19 +117,16 @@ public class ListaRezerwacji extends JFrame {
             return;
         }
 
-        // Pobranie aktualnych danych rezerwacji
         String pesel = (String) rezerwacjeTable.getValueAt(selectedRow, 2);
         String oldHour = (String) rezerwacjeTable.getValueAt(selectedRow, 3);
         String oldDay = (String) rezerwacjeTable.getValueAt(selectedRow, 4);
 
-        // Pobranie listy dostępnych godzin z bazy
         List<String> godzinyLista = pobierzGodzinyZBazy();
         String[] godzinyArray = godzinyLista.toArray(new String[0]);
 
         JComboBox<String> godzinyComboBox = new JComboBox<>(godzinyArray);
         JTextField dataTextField = new JTextField(oldDay);
 
-        // Używamy prostego układu wewnętrznego – nie nadpisujemy stylów z XML
         JPanel panel = new JPanel(new java.awt.GridLayout(2, 2, 5, 5));
         panel.add(new JLabel("Nowa godzina:"));
         panel.add(godzinyComboBox);

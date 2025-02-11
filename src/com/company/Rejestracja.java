@@ -38,8 +38,6 @@ public class Rejestracja extends JFrame {
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Konfiguracja JSpinner dla daty
-        // Pobranie dzisiejszej daty
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
@@ -47,12 +45,9 @@ public class Rejestracja extends JFrame {
         calendar.set(Calendar.MILLISECOND, 0);
         Date today = calendar.getTime();
 
-// Konfiguracja JSpinner dla daty z ograniczeniem minimalnej daty (nie można wybrać przeszłości)
         SpinnerDateModel dateModel = new SpinnerDateModel(today, today, null, Calendar.DAY_OF_MONTH);
         dateSpinner.setModel(dateModel);
 
-
-        // Formatowanie wyglądu daty w JSpinner
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd");
         dateSpinner.setEditor(dateEditor);
 
@@ -72,7 +67,6 @@ public class Rejestracja extends JFrame {
                     return;
                 }
 
-                // Pobranie dzisiejszej daty do porównania
                 Calendar calendarNow = Calendar.getInstance();
                 calendarNow.set(Calendar.HOUR_OF_DAY, 0);
                 calendarNow.set(Calendar.MINUTE, 0);
@@ -90,7 +84,6 @@ public class Rejestracja extends JFrame {
                 registerUser(selectedUser, selectedHour, formattedDate);
             }
         });
-
 
         zarzadzajGodzinamiButton.addActionListener(new ActionListener() {
             @Override
@@ -124,7 +117,7 @@ public class Rejestracja extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DodawaniePracownika oknoPracownika = new DodawaniePracownika();
-                oknoPracownika.setPracownikListener(() -> loadUsersAndHours()); // Aktualizacja listy po dodaniu pracownika
+                oknoPracownika.setPracownikListener(() -> loadUsersAndHours());
                 oknoPracownika.setVisible(true);
             }
         });
@@ -144,7 +137,6 @@ public class Rejestracja extends JFrame {
         List<String> workers = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Pobieranie użytkowników
             String queryUsers = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy ORDER BY NAZWISKO ASC";
             Statement stmtUsers = conn.createStatement();
             ResultSet rsUsers = stmtUsers.executeQuery(queryUsers);
@@ -153,7 +145,6 @@ public class Rejestracja extends JFrame {
                 users.add(user);
             }
 
-            // Pobieranie godzin pracy
             String queryHours = "SELECT GODZINY FROM terminy ORDER BY GODZINY ASC";
             Statement stmtHours = conn.createStatement();
             ResultSet rsHours = stmtHours.executeQuery(queryHours);
@@ -162,7 +153,6 @@ public class Rejestracja extends JFrame {
                 hours.add(hour);
             }
 
-            // Pobieranie pracowników
             String queryWorkers = "SELECT IMIE, NAZWISKO FROM pracownicy";
             Statement stmtWorkers = conn.createStatement();
             ResultSet rsWorkers = stmtWorkers.executeQuery(queryWorkers);
@@ -190,7 +180,6 @@ public class Rejestracja extends JFrame {
         }
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Pobieranie ID użytkownika
             String[] userParts = userName.split(" \\(Pesel:");
             String fullName = userParts[0];
 
@@ -204,7 +193,6 @@ public class Rejestracja extends JFrame {
             }
             int userId = rsUser.getInt("ID");
 
-            // Pobieranie ID terminu
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
@@ -215,7 +203,6 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
-            // Pobieranie ID pracownika
             String workerQuery = "SELECT ID FROM pracownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement workerStmt = conn.prepareStatement(workerQuery);
             workerStmt.setString(1, selectedWorker);
@@ -226,7 +213,6 @@ public class Rejestracja extends JFrame {
             }
             int workerId = rsWorker.getInt("ID");
 
-            // Sprawdzenie czy wybrany pracownik jest wolny w tym terminie
             String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ? AND PRACOWNIK_ID = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, hourId);
@@ -239,7 +225,6 @@ public class Rejestracja extends JFrame {
                 return;
             }
 
-            // Wstawianie rejestracji z uwzględnieniem pracownika
             String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN, PRACOWNIK_ID) VALUES (?, ?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
@@ -259,8 +244,6 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
-
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

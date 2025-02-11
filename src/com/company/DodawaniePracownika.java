@@ -72,7 +72,7 @@ public class DodawaniePracownika extends JFrame {
             if (rowsInserted > 0) {
                 komunikatField.setText("Pracownik został dodany!");
                 if (listener != null) {
-                    listener.onPracownikDodany(); // Informujemy Rejestracja o zmianie
+                    listener.onPracownikDodany();
                 }
             } else {
                 komunikatField.setText("Nie udało się dodać pracownika.");

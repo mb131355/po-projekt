@@ -65,7 +65,6 @@ public class DodawanieUzytkownika extends JFrame {
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Sprawdzenie, czy użytkownik z podanym PESEL już istnieje
             String checkQuery = "SELECT COUNT(*) FROM uzytkownicy WHERE PESEL = ?";
             try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
                 checkStmt.setString(1, pesel);
@@ -74,12 +73,11 @@ public class DodawanieUzytkownika extends JFrame {
                     int count = rs.getInt(1);
                     if (count > 0) {
                         komunikatField.setText("Użytkownik z tym PESEL już istnieje!");
-                        return; // Zakończenie metody, ponieważ PESEL już jest w bazie
+                        return;
                     }
                 }
             }
 
-            // Dodawanie użytkownika, gdy PESEL nie istnieje
             String query = "INSERT INTO uzytkownicy (IMIE, NAZWISKO, PESEL) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, imie);
