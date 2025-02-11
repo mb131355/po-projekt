@@ -164,37 +164,35 @@ public class ListaRezerwacji extends JFrame {
         List<String> godzinyLista = pobierzGodzinyZBazy();
         String[] godzinyArray = godzinyLista.toArray(new String[0]);
 
-        String[] dniArray = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"};
-
         JComboBox<String> godzinyComboBox = new JComboBox<>(godzinyArray);
-        JComboBox<String> dniComboBox = new JComboBox<>(dniArray);
-        godzinyComboBox.setSelectedItem(oldHour);
-        dniComboBox.setSelectedItem(oldDay);
+        JTextField dataTextField = new JTextField(oldDay);
+
+
+
 
         JPanel panel = new JPanel();
         panel.add(new JLabel("Nowa godzina:"));
         panel.add(godzinyComboBox);
-        panel.add(new JLabel("Nowy dzień:"));
-        panel.add(dniComboBox);
+        panel.add(new JLabel("Nowa data (yyyy-mm-dd):"));
+        panel.add(dataTextField);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Edytuj rezerwację", JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             String newHour = (String) godzinyComboBox.getSelectedItem();
-            String newDay = (String) dniComboBox.getSelectedItem();
+            String newDay = dataTextField.getText().trim();
 
             if (newHour.equals(oldHour) && newDay.equals(oldDay)) {
                 JOptionPane.showMessageDialog(this, "Nie dokonano żadnych zmian.", "Informacja", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
-            // Aktualizacja w bazie danych
             editReservation(pesel, oldHour, newHour, oldDay, newDay);
         }
     }
 
+
     private void editReservation(String pesel, String oldHour, String newHour, String oldDay, String newDay) {
         try {
-            // Sprawdzenie, czy nowy termin jest wolny
             String checkQuery = "SELECT COUNT(*) FROM rejestracje WHERE TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setString(1, newHour);
@@ -206,7 +204,6 @@ public class ListaRezerwacji extends JFrame {
                 return;
             }
 
-            // Aktualizacja rezerwacji w bazie
             String updateQuery = "UPDATE rejestracje SET TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
                     "WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) " +
                     "AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
@@ -221,18 +218,19 @@ public class ListaRezerwacji extends JFrame {
 
             if (updatedRows > 0) {
                 JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
-                loadReservations(); // Odświeżenie tabeli
+                loadReservations();
             } else {
                 JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Błąd podczas aktualizacji rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private List<String> pobierzGodzinyZBazy() {
+
+
+private List<String> pobierzGodzinyZBazy() {
         List<String> godziny = new ArrayList<>();
         try {
             String query = "SELECT DISTINCT GODZINY FROM terminy ORDER BY GODZINY";
