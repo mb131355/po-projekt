@@ -226,15 +226,16 @@ public class Rejestracja extends JFrame {
             }
             int workerId = rsWorker.getInt("ID");
 
-            // Sprawdzenie czy termin jest wolny
-            String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ?";
+            // Sprawdzenie czy wybrany pracownik jest wolny w tym terminie
+            String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ? AND PRACOWNIK_ID = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setInt(1, hourId);
             checkStmt.setString(2, selectedDate);
+            checkStmt.setInt(3, workerId);
             ResultSet rsCheck = checkStmt.executeQuery();
 
             if (rsCheck.next()) {
-                wynik.setText("Na ten termin i dzień jest już ktoś zapisany!");
+                wynik.setText("Wybrany pracownik jest już zajęty w tym terminie!");
                 return;
             }
 
@@ -258,6 +259,7 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
 
     public static void main(String[] args) {

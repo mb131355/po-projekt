@@ -58,7 +58,8 @@ public class ListaRezerwacji extends JFrame {
                     "FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID " +
-                    "JOIN pracownicy p ON r.PRACOWNIK_ID = p.ID";
+                    "JOIN pracownicy p ON r.PRACOWNIK_ID = p.ID " +
+                    "ORDER BY r.DZIEN ASC, t.GODZINY ASC";  // sortowanie według daty, a potem godziny
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
@@ -77,10 +78,10 @@ public class ListaRezerwacji extends JFrame {
             e.printStackTrace();
         }
 
-        // Ustawienie modelu tabeli – nie nadpisujemy przy tym stylów, tylko aktualizujemy dane
         DefaultTableModel model = new DefaultTableModel(reservations.toArray(new Object[0][0]), columnNames);
         rezerwacjeTable.setModel(model);
     }
+
 
     private void usunRezerwacje() {
         int selectedRow = rezerwacjeTable.getSelectedRow();
@@ -214,6 +215,7 @@ public class ListaRezerwacji extends JFrame {
         }
         return godziny;
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ListaRezerwacji().setVisible(true));
