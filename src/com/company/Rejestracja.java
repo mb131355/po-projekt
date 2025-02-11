@@ -34,7 +34,7 @@ public class Rejestracja extends JFrame {
     }
 
     public Rejestracja() {
-        setTitle("Rejestracja");
+        setTitle("Rejestracja w salonie manicure");
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -154,7 +154,7 @@ public class Rejestracja extends JFrame {
             }
 
             // Pobieranie godzin pracy
-            String queryHours = "SELECT GODZINY FROM terminy";
+            String queryHours = "SELECT GODZINY FROM terminy ORDER BY GODZINY ASC";
             Statement stmtHours = conn.createStatement();
             ResultSet rsHours = stmtHours.executeQuery(queryHours);
             while (rsHours.next()) {

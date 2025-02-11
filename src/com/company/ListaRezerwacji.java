@@ -21,7 +21,7 @@ public class ListaRezerwacji extends JFrame {
     private Connection conn;
 
     public ListaRezerwacji() {
-        setTitle("Lista Rezerwacji");
+        setTitle("Lista Rejestracji");
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -45,7 +45,7 @@ public class ListaRezerwacji extends JFrame {
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
 
-        
+
     }
 
     private void loadReservations() {

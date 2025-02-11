@@ -58,7 +58,7 @@
         </constraints>
         <properties>
           <background color="-14577467"/>
-          <text value="Dodaj Użytkownika"/>
+          <text value="Dodaj użytkownika"/>
         </properties>
       </component>
       <component id="komunikatField" class="javax.swing.JTextField" binding="komunikatField">

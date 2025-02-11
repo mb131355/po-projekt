@@ -25,7 +25,7 @@ public class DodawanieUzytkownika extends JFrame {
     }
 
     public DodawanieUzytkownika() {
-        setTitle("Dodawanie Użytkownika");
+        setTitle("Zarządzanie klientami");
         setContentPane(mainPanel);
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

@@ -27,7 +27,7 @@ public class DodawaniePracownika extends JFrame {
     }
 
     public DodawaniePracownika() {
-        setTitle("Dodawanie Pracownika");
+        setTitle("Zarządzanie pracownikami");
         setContentPane(mainPanel);
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
