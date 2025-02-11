@@ -44,6 +44,8 @@ public class ListaRezerwacji extends JFrame {
         closeButton.addActionListener(e -> dispose());
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
+
+        
     }
 
     private void loadReservations() {
