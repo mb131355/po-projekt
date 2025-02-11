@@ -155,8 +155,100 @@ public class ListaRezerwacji extends JFrame {
             return;
         }
 
-        JOptionPane.showMessageDialog(this, "Edycja jeszcze nie jest zaimplementowana!"); // TODO: Dodać logikę edycji
+        // Pobranie aktualnych danych
+        String pesel = (String) rezerwacjeTable.getValueAt(selectedRow, 2);
+        String oldHour = (String) rezerwacjeTable.getValueAt(selectedRow, 3);
+        String oldDay = (String) rezerwacjeTable.getValueAt(selectedRow, 4);
+
+        // Pobranie listy dostępnych godzin
+        List<String> godzinyLista = pobierzGodzinyZBazy();
+        String[] godzinyArray = godzinyLista.toArray(new String[0]);
+
+        String[] dniArray = {"Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"};
+
+        JComboBox<String> godzinyComboBox = new JComboBox<>(godzinyArray);
+        JComboBox<String> dniComboBox = new JComboBox<>(dniArray);
+        godzinyComboBox.setSelectedItem(oldHour);
+        dniComboBox.setSelectedItem(oldDay);
+
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Nowa godzina:"));
+        panel.add(godzinyComboBox);
+        panel.add(new JLabel("Nowy dzień:"));
+        panel.add(dniComboBox);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Edytuj rezerwację", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String newHour = (String) godzinyComboBox.getSelectedItem();
+            String newDay = (String) dniComboBox.getSelectedItem();
+
+            if (newHour.equals(oldHour) && newDay.equals(oldDay)) {
+                JOptionPane.showMessageDialog(this, "Nie dokonano żadnych zmian.", "Informacja", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            // Aktualizacja w bazie danych
+            editReservation(pesel, oldHour, newHour, oldDay, newDay);
+        }
     }
+
+    private void editReservation(String pesel, String oldHour, String newHour, String oldDay, String newDay) {
+        try {
+            // Sprawdzenie, czy nowy termin jest wolny
+            String checkQuery = "SELECT COUNT(*) FROM rejestracje WHERE TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
+            PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+            checkStmt.setString(1, newHour);
+            checkStmt.setString(2, newDay);
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, "Wybrana godzina i dzień są już zajęte!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Aktualizacja rezerwacji w bazie
+            String updateQuery = "UPDATE rejestracje SET TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?), DZIEN = ? " +
+                    "WHERE UZYTKOWNIK_ID = (SELECT ID FROM uzytkownicy WHERE PESEL = ?) " +
+                    "AND TERMIN_ID = (SELECT ID FROM terminy WHERE GODZINY = ?) AND DZIEN = ?";
+            PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+            updateStmt.setString(1, newHour);
+            updateStmt.setString(2, newDay);
+            updateStmt.setString(3, pesel);
+            updateStmt.setString(4, oldHour);
+            updateStmt.setString(5, oldDay);
+
+            int updatedRows = updateStmt.executeUpdate();
+
+            if (updatedRows > 0) {
+                JOptionPane.showMessageDialog(this, "Rezerwacja została zaktualizowana!");
+                loadReservations(); // Odświeżenie tabeli
+            } else {
+                JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Błąd podczas aktualizacji rezerwacji!", "Błąd", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private List<String> pobierzGodzinyZBazy() {
+        List<String> godziny = new ArrayList<>();
+        try {
+            String query = "SELECT DISTINCT GODZINY FROM terminy ORDER BY GODZINY";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                godziny.add(rs.getString("GODZINY"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return godziny;
+    }
+
+
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ListaRezerwacji().setVisible(true));
