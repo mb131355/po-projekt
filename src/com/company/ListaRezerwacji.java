@@ -36,7 +36,7 @@ public class ListaRezerwacji extends JFrame {
         }
 
         // Tworzymy tabelę z nagłówkami
-        String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień"};
+        String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
         DefaultTableModel model = new DefaultTableModel(null, columnNames);
         rezerwacjeTable = new JTable(model);
 
@@ -73,22 +73,26 @@ public class ListaRezerwacji extends JFrame {
 
     private void loadReservations() {
         List<Object[]> reservations = new ArrayList<>();
-        String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień"};
+        String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
 
         try {
-            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN FROM rejestracje r " +
+            String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN, p.IMIE AS PRACOWNIK_IMIE, p.NAZWISKO AS PRACOWNIK_NAZWISKO " +
+                    "FROM rejestracje r " +
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
-                    "JOIN terminy t ON r.TERMIN_ID = t.ID";
+                    "JOIN terminy t ON r.TERMIN_ID = t.ID " +
+                    "JOIN pracownicy p ON r.PRACOWNIK_ID = p.ID";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
             while (rs.next()) {
+                String pracownik = rs.getString("PRACOWNIK_IMIE") + " " + rs.getString("PRACOWNIK_NAZWISKO");
                 reservations.add(new Object[]{
                         rs.getString("IMIE"),
                         rs.getString("NAZWISKO"),
                         rs.getString("PESEL"),
                         rs.getString("GODZINY"),
-                        rs.getString("DZIEN")
+                        rs.getString("DZIEN"),
+                        pracownik
                 });
             }
         } catch (SQLException e) {
@@ -99,6 +103,7 @@ public class ListaRezerwacji extends JFrame {
         rezerwacjeTable.setModel(model);
         stylizujTabele();
     }
+
 
     private void stylizujTabele() {
         rezerwacjeTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
@@ -228,8 +233,6 @@ public class ListaRezerwacji extends JFrame {
         }
     }
 
-
-
 private List<String> pobierzGodzinyZBazy() {
         List<String> godziny = new ArrayList<>();
         try {
@@ -244,10 +247,6 @@ private List<String> pobierzGodzinyZBazy() {
         }
         return godziny;
     }
-
-
-
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ListaRezerwacji().setVisible(true));
     }
