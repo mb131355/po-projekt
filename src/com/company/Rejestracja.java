@@ -145,7 +145,7 @@ public class Rejestracja extends JFrame {
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             // Pobieranie użytkowników
-            String queryUsers = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy";
+            String queryUsers = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy ORDER BY NAZWISKO ASC";
             Statement stmtUsers = conn.createStatement();
             ResultSet rsUsers = stmtUsers.executeQuery(queryUsers);
             while (rsUsers.next()) {
