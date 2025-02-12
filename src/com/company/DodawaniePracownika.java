@@ -159,6 +159,9 @@ public class DodawaniePracownika extends JFrame {
                 if (komunikatField != null) {
                     komunikatField.setText("Pracownik został usunięty!");
                 }
+                if (listener != null){
+                    listener.onPracownikDodany();
+                }
                 loadEmployees();
             } else {
                 if (komunikatField != null) {
