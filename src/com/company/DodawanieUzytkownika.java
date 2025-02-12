@@ -1,9 +1,14 @@
 package com.company;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class DodawanieUzytkownika extends JFrame {
     private JPanel mainPanel;
@@ -13,6 +18,7 @@ public class DodawanieUzytkownika extends JFrame {
     private JButton dodajButton;
     private JButton usunButton;
     private JTextField komunikatField;
+    private JTable uzytkownicyTable;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -26,21 +32,37 @@ public class DodawanieUzytkownika extends JFrame {
 
     public DodawanieUzytkownika() {
         setTitle("Zarządzanie klientami");
-        setContentPane(mainPanel);
+        JScrollPane panelScroll = new JScrollPane(mainPanel);
+        setContentPane(panelScroll);
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        if (uzytkownicyTable == null) {
+            uzytkownicyTable = new JTable();
+        }
+
+        if (uzytkownicyTable.getParent() == null) {
+            JScrollPane scrollPane = new JScrollPane(uzytkownicyTable);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        loadUsers();
 
         dodajButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String imie = imieField.getText();
-                String nazwisko = nazwiskoField.getText();
-                String pesel = peselField.getText();
+                String imie = imieField.getText().trim();
+                String nazwisko = nazwiskoField.getText().trim();
+                String pesel = peselField.getText().trim();
 
                 if (imie.isEmpty() || nazwisko.isEmpty() || pesel.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Wszystkie pola muszą być wypełnione!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
+                            "Wszystkie pola muszą być wypełnione!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
                 } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
+                            "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
                 } else {
                     addUserToDatabase(imie, nazwisko, pesel);
                 }
@@ -50,17 +72,53 @@ public class DodawanieUzytkownika extends JFrame {
         usunButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String pesel = peselField.getText();
+                String pesel = peselField.getText().trim();
 
                 if (pesel.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Podaj PESEL użytkownika do usunięcia!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
+                            "Podaj PESEL użytkownika do usunięcia!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
                 } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
+                            "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
                 } else {
                     deleteUserFromDatabase(pesel);
                 }
             }
         });
+    }
+    private void loadUsers() {
+        List<Object[]> users = new ArrayList<>();
+        String[] columnNames = {"Imię", "Nazwisko", "PESEL"};
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy ORDER BY NAZWISKO, IMIE";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                users.add(new Object[]{
+                        rs.getString("IMIE"),
+                        rs.getString("NAZWISKO"),
+                        rs.getString("PESEL")
+                });
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd ładowania danych: " + ex.getMessage());
+            }
+        }
+
+        DefaultTableModel model = new DefaultTableModel(
+                users.toArray(new Object[0][]), columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        uzytkownicyTable.setModel(model);
     }
 
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
@@ -72,7 +130,9 @@ public class DodawanieUzytkownika extends JFrame {
                 if (rs.next()) {
                     int count = rs.getInt(1);
                     if (count > 0) {
-                        komunikatField.setText("Użytkownik z tym PESEL już istnieje!");
+                        if (komunikatField != null) {
+                            komunikatField.setText("Użytkownik z tym PESEL już istnieje!");
+                        }
                         return;
                     }
                 }
@@ -86,17 +146,23 @@ public class DodawanieUzytkownika extends JFrame {
 
                 int rowsInserted = stmt.executeUpdate();
                 if (rowsInserted > 0) {
-                    komunikatField.setText("Użytkownik został dodany!");
-
+                    if (komunikatField != null) {
+                        komunikatField.setText("Użytkownik został dodany!");
+                    }
                     if (listener != null) {
                         listener.onUzytkownikDodany();
                     }
+                    loadUsers();
                 } else {
-                    komunikatField.setText("Nie udało się dodać użytkownika.");
+                    if (komunikatField != null) {
+                        komunikatField.setText("Nie udało się dodać użytkownika.");
+                    }
                 }
             }
         } catch (SQLException e) {
-            komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
+            }
         }
     }
 
@@ -108,17 +174,26 @@ public class DodawanieUzytkownika extends JFrame {
 
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
-                komunikatField.setText("Użytkownik został usunięty!");
+                if (komunikatField != null) {
+                    komunikatField.setText("Użytkownik został usunięty!");
+                }
+                loadUsers();
             } else {
-                komunikatField.setText("Nie znaleziono użytkownika o podanym PESEL.");
+                if (komunikatField != null) {
+                    komunikatField.setText("Nie znaleziono użytkownika o podanym PESEL.");
+                }
             }
         } catch (SQLException e) {
-            komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
+            }
         }
     }
 
     public static void main(String[] args) {
-        JFrame frame = new DodawanieUzytkownika();
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            DodawanieUzytkownika frame = new DodawanieUzytkownika();
+            frame.setVisible(true);
+        });
     }
 }
