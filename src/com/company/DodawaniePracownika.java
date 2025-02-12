@@ -111,7 +111,7 @@ public class DodawaniePracownika extends JFrame {
                 employees.toArray(new Object[0][]), columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Tabela tylko do odczytu
+                return false;
             }
         };
         pracownicyTable.setModel(model);
@@ -133,7 +133,7 @@ public class DodawaniePracownika extends JFrame {
                 if (listener != null) {
                     listener.onPracownikDodany();
                 }
-                loadEmployees(); // Odświeżenie tabeli po dodaniu
+                loadEmployees();
             } else {
                 if (komunikatField != null) {
                     komunikatField.setText("Nie udało się dodać pracownika.");
@@ -159,7 +159,7 @@ public class DodawaniePracownika extends JFrame {
                 if (komunikatField != null) {
                     komunikatField.setText("Pracownik został usunięty!");
                 }
-                loadEmployees(); // Odświeżenie tabeli po usunięciu
+                loadEmployees();
             } else {
                 if (komunikatField != null) {
                     komunikatField.setText("Nie znaleziono pracownika o podanym imieniu i nazwisku.");
