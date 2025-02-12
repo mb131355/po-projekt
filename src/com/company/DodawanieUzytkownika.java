@@ -9,7 +9,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class DodawanieUzytkownika extends JFrame {
     private JPanel mainPanel;
     private JTextField imieField;
@@ -19,11 +18,9 @@ public class DodawanieUzytkownika extends JFrame {
     private JButton usunButton;
     private JTextField komunikatField;
     private JTable uzytkownicyTable;
-
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
     private static final String PASSWORD = "";
-
     private UzytkownikListener listener;
 
     public void setUzytkownikListener(UzytkownikListener listener) {
@@ -36,67 +33,51 @@ public class DodawanieUzytkownika extends JFrame {
         setContentPane(panelScroll);
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
         if (uzytkownicyTable == null) {
             uzytkownicyTable = new JTable();
         }
-
         if (uzytkownicyTable.getParent() == null) {
             JScrollPane scrollPane = new JScrollPane(uzytkownicyTable);
             mainPanel.add(scrollPane, BorderLayout.CENTER);
         }
-
         loadUsers();
-
         dodajButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 String imie = imieField.getText().trim();
                 String nazwisko = nazwiskoField.getText().trim();
                 String pesel = peselField.getText().trim();
-
                 if (imie.isEmpty() || nazwisko.isEmpty() || pesel.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
-                            "Wszystkie pola muszą być wypełnione!", "Błąd",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Wszystkie pola muszą być wypełnione!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
-                            "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd", JOptionPane.ERROR_MESSAGE);
                 } else {
                     addUserToDatabase(imie, nazwisko, pesel);
                 }
             }
         });
-
         usunButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                String pesel = peselField.getText().trim();
-
-                if (pesel.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
-                            "Podaj PESEL użytkownika do usunięcia!", "Błąd",
-                            JOptionPane.ERROR_MESSAGE);
-                } else if (!pesel.matches("\\d{11}")) {
-                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this,
-                            "PESEL musi składać się z dokładnie 11 cyfr!", "Błąd",
-                            JOptionPane.ERROR_MESSAGE);
-                } else {
+                int selectedRow = uzytkownicyTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(DodawanieUzytkownika.this, "Wybierz użytkownika z tabeli do usunięcia!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String pesel = (String) uzytkownicyTable.getValueAt(selectedRow, 2);
+                int confirm = JOptionPane.showConfirmDialog(DodawanieUzytkownika.this, "Czy na pewno chcesz usunąć wybranego użytkownika?", "Potwierdzenie", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
                     deleteUserFromDatabase(pesel);
                 }
             }
         });
     }
+
     private void loadUsers() {
         List<Object[]> users = new ArrayList<>();
         String[] columnNames = {"Imię", "Nazwisko", "PESEL"};
-
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "SELECT IMIE, NAZWISKO, PESEL FROM uzytkownicy ORDER BY NAZWISKO, IMIE";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-
             while (rs.next()) {
                 users.add(new Object[]{
                         rs.getString("IMIE"),
@@ -110,10 +91,7 @@ public class DodawanieUzytkownika extends JFrame {
                 komunikatField.setText("Błąd ładowania danych: " + ex.getMessage());
             }
         }
-
-        DefaultTableModel model = new DefaultTableModel(
-                users.toArray(new Object[0][]), columnNames) {
-            @Override
+        DefaultTableModel model = new DefaultTableModel(users.toArray(new Object[0][]), columnNames) {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -137,13 +115,11 @@ public class DodawanieUzytkownika extends JFrame {
                     }
                 }
             }
-
             String query = "INSERT INTO uzytkownicy (IMIE, NAZWISKO, PESEL) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, imie);
                 stmt.setString(2, nazwisko);
                 stmt.setString(3, pesel);
-
                 int rowsInserted = stmt.executeUpdate();
                 if (rowsInserted > 0) {
                     if (komunikatField != null) {
@@ -171,7 +147,6 @@ public class DodawanieUzytkownika extends JFrame {
             String query = "DELETE FROM uzytkownicy WHERE PESEL = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, pesel);
-
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
                 if (komunikatField != null) {
