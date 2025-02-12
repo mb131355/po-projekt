@@ -123,6 +123,13 @@ public class ZarzadzanieGodzinami extends JFrame {
             return false;
         }
     }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ZarzadzanieGodzinami okno = new ZarzadzanieGodzinami();
+            okno.setVisible(true);
+        });
+    }
+
 }
 
 
