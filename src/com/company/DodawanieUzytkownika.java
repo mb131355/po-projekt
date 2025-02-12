@@ -152,6 +152,9 @@ public class DodawanieUzytkownika extends JFrame {
                 if (komunikatField != null) {
                     komunikatField.setText("Użytkownik został usunięty!");
                 }
+                if (listener != null) {
+                    listener.onUzytkownikDodany();
+                }
                 loadUsers();
             } else {
                 if (komunikatField != null) {
