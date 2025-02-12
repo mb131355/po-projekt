@@ -1,12 +1,13 @@
 package com.company;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DodawaniePracownika extends JFrame {
     private JPanel mainPanel;
@@ -15,6 +16,7 @@ public class DodawaniePracownika extends JFrame {
     private JButton dodajButton;
     private JButton usunButton;
     private JTextField komunikatField;
+    private JTable pracownicyTable;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -32,14 +34,27 @@ public class DodawaniePracownika extends JFrame {
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+        if (pracownicyTable == null) {
+            pracownicyTable = new JTable();
+        }
+
+        if (pracownicyTable.getParent() == null) {
+            JScrollPane scrollPane = new JScrollPane(pracownicyTable);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        loadEmployees();
+
         dodajButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String imie = imieField.getText();
-                String nazwisko = nazwiskoField.getText();
+                String imie = imieField.getText().trim();
+                String nazwisko = nazwiskoField.getText().trim();
 
                 if (imie.isEmpty() || nazwisko.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawaniePracownika.this, "Wszystkie pola muszą być wypełnione!", "Błąd", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DodawaniePracownika.this,
+                            "Wszystkie pola muszą być wypełnione!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
                 } else {
                     addPracownikToDatabase(imie, nazwisko);
                 }
@@ -49,17 +64,59 @@ public class DodawaniePracownika extends JFrame {
         usunButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String imie = imieField.getText();
-                String nazwisko = nazwiskoField.getText();
+                int selectedRow = pracownicyTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(DodawaniePracownika.this,
+                            "Wybierz pracownika z tabeli do usunięcia!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String imie = (String) pracownicyTable.getValueAt(selectedRow, 0);
+                String nazwisko = (String) pracownicyTable.getValueAt(selectedRow, 1);
 
-                if (imie.isEmpty() || nazwisko.isEmpty()) {
-                    JOptionPane.showMessageDialog(DodawaniePracownika.this, "Podaj imię i nazwisko pracownika do usunięcia!", "Błąd", JOptionPane.ERROR_MESSAGE);
-                } else {
+                int confirm = JOptionPane.showConfirmDialog(DodawaniePracownika.this,
+                        "Czy na pewno chcesz usunąć tego pracownika?", "Potwierdzenie",
+                        JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
                     deletePracownikFromDatabase(imie, nazwisko);
                 }
             }
         });
+
+
     }
+    private void loadEmployees() {
+        List<Object[]> employees = new ArrayList<>();
+        String[] columnNames = {"Imię", "Nazwisko"};
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "SELECT IMIE, NAZWISKO FROM pracownicy ORDER BY NAZWISKO, IMIE";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                employees.add(new Object[]{
+                        rs.getString("IMIE"),
+                        rs.getString("NAZWISKO")
+                });
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd ładowania danych: " + ex.getMessage());
+            }
+        }
+
+        DefaultTableModel model = new DefaultTableModel(
+                employees.toArray(new Object[0][]), columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Tabela tylko do odczytu
+            }
+        };
+        pracownicyTable.setModel(model);
+    }
+
 
     private void addPracownikToDatabase(String imie, String nazwisko) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
@@ -70,15 +127,22 @@ public class DodawaniePracownika extends JFrame {
 
             int rowsInserted = stmt.executeUpdate();
             if (rowsInserted > 0) {
-                komunikatField.setText("Pracownik został dodany!");
+                if (komunikatField != null) {
+                    komunikatField.setText("Pracownik został dodany!");
+                }
                 if (listener != null) {
                     listener.onPracownikDodany();
                 }
+                loadEmployees(); // Odświeżenie tabeli po dodaniu
             } else {
-                komunikatField.setText("Nie udało się dodać pracownika.");
+                if (komunikatField != null) {
+                    komunikatField.setText("Nie udało się dodać pracownika.");
+                }
             }
         } catch (SQLException e) {
-            komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd zapisu do bazy: " + e.getMessage());
+            }
         }
     }
 
@@ -92,12 +156,19 @@ public class DodawaniePracownika extends JFrame {
 
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
-                komunikatField.setText("Pracownik został usunięty!");
+                if (komunikatField != null) {
+                    komunikatField.setText("Pracownik został usunięty!");
+                }
+                loadEmployees(); // Odświeżenie tabeli po usunięciu
             } else {
-                komunikatField.setText("Nie znaleziono pracownika o podanym imieniu i nazwisku.");
+                if (komunikatField != null) {
+                    komunikatField.setText("Nie znaleziono pracownika o podanym imieniu i nazwisku.");
+                }
             }
         } catch (SQLException e) {
-            komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
+            if (komunikatField != null) {
+                komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
+            }
         }
     }
 
