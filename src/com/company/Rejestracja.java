@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,36 +52,48 @@ public class Rejestracja extends JFrame {
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd");
         dateSpinner.setEditor(dateEditor);
 
-        loadUsersAndHours();
+        JFormattedTextField ftf = dateEditor.getTextField();
+        ftf.setFocusLostBehavior(JFormattedTextField.PERSIST);
 
+        loadUsersAndHours();
         pack();
 
         OKButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String selectedUser = (String) userComboBox.getSelectedItem();
-                String selectedHour = (String) godzinyPracy.getSelectedItem();
-                Date selectedDate = (Date) dateSpinner.getValue();
-
-                if (selectedUser == null || selectedHour == null || selectedDate == null) {
-                    wynik.setText("Wszystkie pola muszą być wypełnione!");
+                String dateText = dateEditor.getTextField().getText();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date selectedDate;
+                try {
+                    selectedDate = sdf.parse(dateText);
+                } catch (ParseException ex) {
+                    wynik.setText("Zły format daty! Użyj formatu yyyy-MM-dd.");
                     return;
                 }
 
-                Calendar calendarNow = Calendar.getInstance();
-                calendarNow.set(Calendar.HOUR_OF_DAY, 0);
-                calendarNow.set(Calendar.MINUTE, 0);
-                calendarNow.set(Calendar.SECOND, 0);
-                calendarNow.set(Calendar.MILLISECOND, 0);
-                Date today = calendarNow.getTime();
+                Calendar selectedCal = Calendar.getInstance();
+                selectedCal.setTime(selectedDate);
+                selectedCal.set(Calendar.HOUR_OF_DAY, 0);
+                selectedCal.set(Calendar.MINUTE, 0);
+                selectedCal.set(Calendar.SECOND, 0);
+                selectedCal.set(Calendar.MILLISECOND, 0);
 
-                if (selectedDate.before(today)) {
+                Calendar nowCal = Calendar.getInstance();
+                nowCal.set(Calendar.HOUR_OF_DAY, 0);
+                nowCal.set(Calendar.MINUTE, 0);
+                nowCal.set(Calendar.SECOND, 0);
+                nowCal.set(Calendar.MILLISECOND, 0);
+
+                if (selectedCal.before(nowCal)) {
                     wynik.setText("Nie można wybrać przeszłej daty!");
                     return;
                 }
 
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String selectedUser = (String) userComboBox.getSelectedItem();
+                String selectedHour = (String) godzinyPracy.getSelectedItem();
+
                 String formattedDate = sdf.format(selectedDate);
+
                 registerUser(selectedUser, selectedHour, formattedDate);
             }
         });
