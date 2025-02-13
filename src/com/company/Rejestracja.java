@@ -196,7 +196,6 @@ public class Rejestracja extends JFrame {
         }
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Pobranie ID użytkownika
             String[] userParts = userName.split(" \\(Pesel:");
             String fullName = userParts[0];
             String userQuery = "SELECT ID FROM uzytkownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
@@ -209,7 +208,6 @@ public class Rejestracja extends JFrame {
             }
             int userId = rsUser.getInt("ID");
 
-            // Pobranie ID wybranego terminu (dokładnie wybranej godziny)
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
@@ -220,7 +218,6 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
-            // Pobranie ID pracownika
             String workerQuery = "SELECT ID FROM pracownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement workerStmt = conn.prepareStatement(workerQuery);
             workerStmt.setString(1, selectedWorker);
@@ -231,8 +228,6 @@ public class Rejestracja extends JFrame {
             }
             int workerId = rsWorker.getInt("ID");
 
-            // Sprawdzenie czy dany pracownik ma już rezerwację, która nachodzi na wybrany przedział czasowy.
-            // Pobieramy wszystkie terminy rezerwacji dla tego pracownika w wybranym dniu:
             String queryOverlapping = "SELECT t.GODZINY FROM rejestracje r " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID " +
                     "WHERE r.DZIEN = ? AND r.PRACOWNIK_ID = ?";
@@ -241,7 +236,6 @@ public class Rejestracja extends JFrame {
             psOver.setInt(2, workerId);
             ResultSet rsOver = psOver.executeQuery();
 
-            // Rozbijamy wybrany przedział czasowy (np. "08:00 - 10:00")
             String[] selectedParts = selectedHour.split(" - ");
             if (selectedParts.length != 2) {
                 wynikGodzina.setText("Błędny format wybranego terminu: " + selectedHour);
@@ -259,7 +253,7 @@ public class Rejestracja extends JFrame {
 
             boolean overlappingFound = false;
             while (rsOver.next()) {
-                String existingRange = rsOver.getString("GODZINY"); // np. "07:00 - 09:00"
+                String existingRange = rsOver.getString("GODZINY");
                 String[] parts = existingRange.split(" - ");
                 if (parts.length != 2) continue; // pomiń błędny format
                 java.time.LocalTime existStart, existEnd;
@@ -269,9 +263,7 @@ public class Rejestracja extends JFrame {
                 } catch (Exception ex) {
                     continue;
                 }
-                // Warunek nachodzenia się przedziałów:
-                // przedziały [newStart, newEnd] i [existStart, existEnd] nachodzą się, gdy:
-                // newStart < existEnd AND existStart < newEnd
+
                 if (newStart.isBefore(existEnd) && existStart.isBefore(newEnd)) {
                     overlappingFound = true;
                     break;
@@ -281,11 +273,9 @@ public class Rejestracja extends JFrame {
                 wynikGodzina.setText("Wybrany pracownik jest już zajęty w tym terminie!");
                 return;
             } else {
-                // Jeśli nie ma konfliktu, czyścimy komunikat w wynikGodzina.
                 wynikGodzina.setText("");
             }
 
-            // Jeśli wszystkie sprawdzenia są pomyślne, wykonujemy rejestrację:
             String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN, PRACOWNIK_ID) VALUES (?, ?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
@@ -297,6 +287,9 @@ public class Rejestracja extends JFrame {
             if (rowsInserted > 0) {
                 wynik.setText("Rejestracja zakończona!");
                 loadUsersAndHours();
+                if (ListaRezerwacji.instance != null && ListaRezerwacji.instance.isVisible()) {
+                    ListaRezerwacji.instance.loadReservations();
+                }
             } else {
                 wynik.setText("Nie udało się zarejestrować.");
             }

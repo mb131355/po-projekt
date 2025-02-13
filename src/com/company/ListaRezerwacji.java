@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListaRezerwacji extends JFrame {
+    public static ListaRezerwacji instance = null;
     private JPanel panel1;
     private JTable rezerwacjeTable;
     private JButton closeButton;
@@ -35,6 +36,8 @@ public class ListaRezerwacji extends JFrame {
 
         setContentPane(panel1);
 
+        instance = this;
+
         loadReservations();
 
         closeButton.addActionListener(e -> dispose());
@@ -47,7 +50,7 @@ public class ListaRezerwacji extends JFrame {
         });
     }
 
-    private void loadReservations() {
+    public void loadReservations() {
         List<Object[]> reservations = new ArrayList<>();
         String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
 
