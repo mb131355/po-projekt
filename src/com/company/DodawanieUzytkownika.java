@@ -29,8 +29,7 @@ public class DodawanieUzytkownika extends JFrame {
 
     public DodawanieUzytkownika() {
         setTitle("Zarządzanie klientami");
-        JScrollPane panelScroll = new JScrollPane(mainPanel);
-        setContentPane(panelScroll);
+        setContentPane(mainPanel);
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         if (uzytkownicyTable == null) {
