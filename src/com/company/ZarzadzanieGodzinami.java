@@ -30,7 +30,7 @@ public class ZarzadzanieGodzinami extends JFrame {
     public ZarzadzanieGodzinami() {
         setTitle("Zarządzanie Godzinami");
         setContentPane(mainPanel);
-        setSize(800, 600);
+        setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         dodajGodzineButton.addActionListener(new ActionListener() {

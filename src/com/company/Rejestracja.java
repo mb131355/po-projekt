@@ -23,6 +23,8 @@ public class Rejestracja extends JFrame {
     private JButton dodajPracownikaButton;
     private JComboBox wybierzPracownika;
     private JSpinner dateSpinner;
+    private JLabel wynikData;
+    private JLabel wynikGodzina;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -67,7 +69,7 @@ public class Rejestracja extends JFrame {
                 try {
                     selectedDate = sdf.parse(dateText);
                 } catch (ParseException ex) {
-                    wynik.setText("Zły format daty! Użyj formatu yyyy-MM-dd.");
+                    wynikData.setText("Zły format daty! Użyj formatu yyyy-MM-dd.");
                     return;
                 }
 
@@ -85,18 +87,19 @@ public class Rejestracja extends JFrame {
                 nowCal.set(Calendar.MILLISECOND, 0);
 
                 if (selectedCal.before(nowCal)) {
-                    wynik.setText("Nie można wybrać przeszłej daty!");
+                    wynikData.setText("Nie można wybrać przeszłej daty!");
                     return;
                 }
+                wynikData.setText("");
 
                 String selectedUser = (String) userComboBox.getSelectedItem();
                 String selectedHour = (String) godzinyPracy.getSelectedItem();
-
                 String formattedDate = sdf.format(selectedDate);
 
                 registerUser(selectedUser, selectedHour, formattedDate);
             }
         });
+
 
         zarzadzajGodzinamiButton.addActionListener(new ActionListener() {
             @Override

@@ -12,7 +12,7 @@ public class ListaRezerwacji extends JFrame {
     private JButton closeButton;
     private JButton usunRezerwacjeButton;
     private JButton edytujRezerwacjeButton;
-    private JButton historiaRezerwacjiButton;  // przycisk historii
+    private JButton historiaRezerwacjiButton;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -41,7 +41,6 @@ public class ListaRezerwacji extends JFrame {
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
 
-        // Dodajemy obsługę przycisku historii rejestracji:
         historiaRezerwacjiButton.addActionListener(e -> {
             HistoriaRezerwacji historyFrame = new HistoriaRezerwacji();
             historyFrame.setVisible(true);
