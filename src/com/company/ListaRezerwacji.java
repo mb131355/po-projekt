@@ -12,6 +12,7 @@ public class ListaRezerwacji extends JFrame {
     private JButton closeButton;
     private JButton usunRezerwacjeButton;
     private JButton edytujRezerwacjeButton;
+    private JButton historiaRezerwacjiButton;  // przycisk historii
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -39,6 +40,12 @@ public class ListaRezerwacji extends JFrame {
         closeButton.addActionListener(e -> dispose());
         usunRezerwacjeButton.addActionListener(e -> usunRezerwacje());
         edytujRezerwacjeButton.addActionListener(e -> edytujRezerwacje());
+
+        // Dodajemy obsługę przycisku historii rejestracji:
+        historiaRezerwacjiButton.addActionListener(e -> {
+            HistoriaRezerwacji historyFrame = new HistoriaRezerwacji();
+            historyFrame.setVisible(true);
+        });
     }
 
     private void loadReservations() {
@@ -52,7 +59,9 @@ public class ListaRezerwacji extends JFrame {
                     "JOIN uzytkownicy u ON r.UZYTKOWNIK_ID = u.ID " +
                     "JOIN terminy t ON r.TERMIN_ID = t.ID " +
                     "JOIN pracownicy p ON r.PRACOWNIK_ID = p.ID " +
+                    "WHERE r.DZIEN >= CURDATE() " +
                     "ORDER BY r.DZIEN ASC, t.GODZINY ASC";
+
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
@@ -71,7 +80,7 @@ public class ListaRezerwacji extends JFrame {
             e.printStackTrace();
         }
 
-        DefaultTableModel model = new DefaultTableModel(reservations.toArray(new Object[0][0]), columnNames);
+        DefaultTableModel model = new DefaultTableModel(reservations.toArray(new Object[0][]), columnNames);
         rezerwacjeTable.setModel(model);
     }
 
@@ -204,7 +213,6 @@ public class ListaRezerwacji extends JFrame {
         }
         return godziny;
     }
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ListaRezerwacji().setVisible(true));
