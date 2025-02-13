@@ -255,7 +255,7 @@ public class Rejestracja extends JFrame {
             while (rsOver.next()) {
                 String existingRange = rsOver.getString("GODZINY");
                 String[] parts = existingRange.split(" - ");
-                if (parts.length != 2) continue; // pomiń błędny format
+                if (parts.length != 2) continue;
                 java.time.LocalTime existStart, existEnd;
                 try {
                     existStart = java.time.LocalTime.parse(parts[0].trim(), timeFormatter);

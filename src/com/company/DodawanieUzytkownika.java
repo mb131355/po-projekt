@@ -36,7 +36,6 @@ public class DodawanieUzytkownika extends JFrame {
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Jeżeli tabela nie została jeszcze utworzona, utwórz ją oraz opakuj w JScrollPane
         if (uzytkownicyTable == null) {
             uzytkownicyTable = new JTable();
         }
@@ -46,7 +45,6 @@ public class DodawanieUzytkownika extends JFrame {
         }
         loadUsers();
 
-        // Dodawanie nowego użytkownika
         dodajButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String imie = imieField.getText().trim();
@@ -64,7 +62,6 @@ public class DodawanieUzytkownika extends JFrame {
             }
         });
 
-        // Usuwanie użytkownika
         usunButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = uzytkownicyTable.getSelectedRow();
@@ -82,7 +79,6 @@ public class DodawanieUzytkownika extends JFrame {
             }
         });
 
-        // Edycja użytkownika – otwieramy okienko z polami tekstowymi
         edytujUżytkownikaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = uzytkownicyTable.getSelectedRow();
@@ -95,7 +91,6 @@ public class DodawanieUzytkownika extends JFrame {
                 String currentNazwisko = (String) uzytkownicyTable.getValueAt(selectedRow, 1);
                 String currentPesel = (String) uzytkownicyTable.getValueAt(selectedRow, 2);
 
-                // Utwórz pola do edycji, wstępnie wypełnione aktualnymi danymi
                 JTextField editImie = new JTextField(currentImie, 20);
                 JTextField editNazwisko = new JTextField(currentNazwisko, 20);
                 JTextField editPesel = new JTextField(currentPesel, 20);
@@ -130,7 +125,6 @@ public class DodawanieUzytkownika extends JFrame {
         });
     }
 
-    // Metoda ładująca użytkowników z bazy i wyświetlająca ich w tabeli
     private void loadUsers() {
         List<Object[]> users = new ArrayList<>();
         String[] columnNames = {"Imię", "Nazwisko", "PESEL"};
@@ -161,7 +155,6 @@ public class DodawanieUzytkownika extends JFrame {
         uzytkownicyTable.setModel(model);
     }
 
-    // Metoda dodająca użytkownika do bazy
     private void addUserToDatabase(String imie, String nazwisko, String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String checkQuery = "SELECT COUNT(*) FROM uzytkownicy WHERE PESEL = ?";
@@ -202,7 +195,6 @@ public class DodawanieUzytkownika extends JFrame {
         }
     }
 
-    // Metoda usuwająca użytkownika z bazy
     private void deleteUserFromDatabase(String pesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "DELETE FROM uzytkownicy WHERE PESEL = ?";
@@ -229,10 +221,8 @@ public class DodawanieUzytkownika extends JFrame {
         }
     }
 
-    // Metoda aktualizująca dane użytkownika w bazie
     private void updateUserInDatabase(String originalPesel, String newImie, String newNazwisko, String newPesel) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            // Jeśli PESEL został zmieniony, upewnij się, że nowy nie istnieje już w bazie
             if (!originalPesel.equals(newPesel)) {
                 String checkQuery = "SELECT COUNT(*) FROM uzytkownicy WHERE PESEL = ?";
                 try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
@@ -255,7 +245,7 @@ public class DodawanieUzytkownika extends JFrame {
                 if (updatedRows > 0) {
                     JOptionPane.showMessageDialog(this, "Dane użytkownika zostały zaktualizowane!");
                     if (listener != null) {
-                        listener.onUzytkownikDodany();  // <-- wywołanie callbacka
+                        listener.onUzytkownikDodany();
                     }
                     loadUsers();
                 } else {

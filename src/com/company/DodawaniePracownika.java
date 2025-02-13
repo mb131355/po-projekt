@@ -46,7 +46,6 @@ public class DodawaniePracownika extends JFrame {
 
         loadEmployees();
 
-        // Dodawanie nowego pracownika
         dodajButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -63,7 +62,6 @@ public class DodawaniePracownika extends JFrame {
             }
         });
 
-        // Usuwanie pracownika
         usunButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -86,7 +84,6 @@ public class DodawaniePracownika extends JFrame {
             }
         });
 
-        // Edycja pracownika
         edytujPracownikaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,11 +94,9 @@ public class DodawaniePracownika extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                // Pobranie aktualnych danych z tabeli
                 String currentImie = (String) pracownicyTable.getValueAt(selectedRow, 0);
                 String currentNazwisko = (String) pracownicyTable.getValueAt(selectedRow, 1);
 
-                // Przygotowanie pól edycji
                 JTextField editImieField = new JTextField(currentImie, 20);
                 JTextField editNazwiskoField = new JTextField(currentNazwisko, 20);
 

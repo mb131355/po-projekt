@@ -50,7 +50,6 @@ public class HistoriaRezerwacji extends JFrame {
         String[] columnNames = {"Imię", "Nazwisko", "PESEL", "Godzina", "Dzień", "Pracownik"};
 
         try {
-            // Pobieramy rezerwacje, gdzie data jest wcześniejsza niż dzisiejsza
             String query = "SELECT u.IMIE, u.NAZWISKO, u.PESEL, t.GODZINY, r.DZIEN, " +
                     "p.IMIE AS PRACOWNIK_IMIE, p.NAZWISKO AS PRACOWNIK_NAZWISKO " +
                     "FROM rejestracje r " +
