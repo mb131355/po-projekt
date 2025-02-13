@@ -196,9 +196,9 @@ public class Rejestracja extends JFrame {
         }
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            // Pobranie ID użytkownika
             String[] userParts = userName.split(" \\(Pesel:");
             String fullName = userParts[0];
-
             String userQuery = "SELECT ID FROM uzytkownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement userStmt = conn.prepareStatement(userQuery);
             userStmt.setString(1, fullName);
@@ -209,6 +209,7 @@ public class Rejestracja extends JFrame {
             }
             int userId = rsUser.getInt("ID");
 
+            // Pobranie ID wybranego terminu (dokładnie wybranej godziny)
             String hourQuery = "SELECT ID FROM terminy WHERE GODZINY = ?";
             PreparedStatement hourStmt = conn.prepareStatement(hourQuery);
             hourStmt.setString(1, selectedHour);
@@ -219,6 +220,7 @@ public class Rejestracja extends JFrame {
             }
             int hourId = rsHour.getInt("ID");
 
+            // Pobranie ID pracownika
             String workerQuery = "SELECT ID FROM pracownicy WHERE CONCAT(IMIE, ' ', NAZWISKO) = ?";
             PreparedStatement workerStmt = conn.prepareStatement(workerQuery);
             workerStmt.setString(1, selectedWorker);
@@ -229,18 +231,61 @@ public class Rejestracja extends JFrame {
             }
             int workerId = rsWorker.getInt("ID");
 
-            String checkQuery = "SELECT ID FROM rejestracje WHERE TERMIN_ID = ? AND DZIEN = ? AND PRACOWNIK_ID = ?";
-            PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
-            checkStmt.setInt(1, hourId);
-            checkStmt.setString(2, selectedDate);
-            checkStmt.setInt(3, workerId);
-            ResultSet rsCheck = checkStmt.executeQuery();
+            // Sprawdzenie czy dany pracownik ma już rezerwację, która nachodzi na wybrany przedział czasowy.
+            // Pobieramy wszystkie terminy rezerwacji dla tego pracownika w wybranym dniu:
+            String queryOverlapping = "SELECT t.GODZINY FROM rejestracje r " +
+                    "JOIN terminy t ON r.TERMIN_ID = t.ID " +
+                    "WHERE r.DZIEN = ? AND r.PRACOWNIK_ID = ?";
+            PreparedStatement psOver = conn.prepareStatement(queryOverlapping);
+            psOver.setString(1, selectedDate);
+            psOver.setInt(2, workerId);
+            ResultSet rsOver = psOver.executeQuery();
 
-            if (rsCheck.next()) {
-                wynik.setText("Wybrany pracownik jest już zajęty w tym terminie!");
+            // Rozbijamy wybrany przedział czasowy (np. "08:00 - 10:00")
+            String[] selectedParts = selectedHour.split(" - ");
+            if (selectedParts.length != 2) {
+                wynikGodzina.setText("Błędny format wybranego terminu: " + selectedHour);
+                return;
+            }
+            java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+            java.time.LocalTime newStart, newEnd;
+            try {
+                newStart = java.time.LocalTime.parse(selectedParts[0].trim(), timeFormatter);
+                newEnd = java.time.LocalTime.parse(selectedParts[1].trim(), timeFormatter);
+            } catch (Exception ex) {
+                wynikGodzina.setText("Błędny format wybranego terminu: " + selectedHour);
                 return;
             }
 
+            boolean overlappingFound = false;
+            while (rsOver.next()) {
+                String existingRange = rsOver.getString("GODZINY"); // np. "07:00 - 09:00"
+                String[] parts = existingRange.split(" - ");
+                if (parts.length != 2) continue; // pomiń błędny format
+                java.time.LocalTime existStart, existEnd;
+                try {
+                    existStart = java.time.LocalTime.parse(parts[0].trim(), timeFormatter);
+                    existEnd = java.time.LocalTime.parse(parts[1].trim(), timeFormatter);
+                } catch (Exception ex) {
+                    continue;
+                }
+                // Warunek nachodzenia się przedziałów:
+                // przedziały [newStart, newEnd] i [existStart, existEnd] nachodzą się, gdy:
+                // newStart < existEnd AND existStart < newEnd
+                if (newStart.isBefore(existEnd) && existStart.isBefore(newEnd)) {
+                    overlappingFound = true;
+                    break;
+                }
+            }
+            if (overlappingFound) {
+                wynikGodzina.setText("Wybrany pracownik jest już zajęty w tym terminie!");
+                return;
+            } else {
+                // Jeśli nie ma konfliktu, czyścimy komunikat w wynikGodzina.
+                wynikGodzina.setText("");
+            }
+
+            // Jeśli wszystkie sprawdzenia są pomyślne, wykonujemy rejestrację:
             String insertQuery = "INSERT INTO rejestracje (UZYTKOWNIK_ID, TERMIN_ID, DZIEN, PRACOWNIK_ID) VALUES (?, ?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setInt(1, userId);
@@ -260,6 +305,7 @@ public class Rejestracja extends JFrame {
             wynik.setText("Błąd zapisu do bazy: " + e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
