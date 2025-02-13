@@ -17,6 +17,7 @@ public class DodawaniePracownika extends JFrame {
     private JButton usunButton;
     private JTextField komunikatField;
     private JTable pracownicyTable;
+    private JButton edytujPracownikaButton;
 
     private static final String URL = "jdbc:mysql://localhost:3306/rejestracja";
     private static final String USER = "root";
@@ -45,6 +46,7 @@ public class DodawaniePracownika extends JFrame {
 
         loadEmployees();
 
+        // Dodawanie nowego pracownika
         dodajButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -61,6 +63,7 @@ public class DodawaniePracownika extends JFrame {
             }
         });
 
+        // Usuwanie pracownika
         usunButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -83,8 +86,50 @@ public class DodawaniePracownika extends JFrame {
             }
         });
 
+        // Edycja pracownika
+        edytujPracownikaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = pracownicyTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(DodawaniePracownika.this,
+                            "Wybierz pracownika z tabeli do edycji!", "Błąd",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                // Pobranie aktualnych danych z tabeli
+                String currentImie = (String) pracownicyTable.getValueAt(selectedRow, 0);
+                String currentNazwisko = (String) pracownicyTable.getValueAt(selectedRow, 1);
 
+                // Przygotowanie pól edycji
+                JTextField editImieField = new JTextField(currentImie, 20);
+                JTextField editNazwiskoField = new JTextField(currentNazwisko, 20);
+
+                JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+                panel.add(new JLabel("Imię:"));
+                panel.add(editImieField);
+                panel.add(new JLabel("Nazwisko:"));
+                panel.add(editNazwiskoField);
+
+                int result = JOptionPane.showConfirmDialog(DodawaniePracownika.this, panel,
+                        "Edytuj pracownika", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    String newImie = editImieField.getText().trim();
+                    String newNazwisko = editNazwiskoField.getText().trim();
+
+                    if (newImie.isEmpty() || newNazwisko.isEmpty()) {
+                        JOptionPane.showMessageDialog(DodawaniePracownika.this,
+                                "Wszystkie pola muszą być wypełnione!", "Błąd",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    updatePracownikInDatabase(currentImie, currentNazwisko, newImie, newNazwisko);
+                }
+            }
+        });
     }
+
     private void loadEmployees() {
         List<Object[]> employees = new ArrayList<>();
         String[] columnNames = {"Imię", "Nazwisko"};
@@ -117,7 +162,6 @@ public class DodawaniePracownika extends JFrame {
         pracownicyTable.setModel(model);
     }
 
-
     private void addPracownikToDatabase(String imie, String nazwisko) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "INSERT INTO pracownicy (IMIE, NAZWISKO) VALUES (?, ?)";
@@ -146,7 +190,6 @@ public class DodawaniePracownika extends JFrame {
         }
     }
 
-
     private void deletePracownikFromDatabase(String imie, String nazwisko) {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             String query = "DELETE FROM pracownicy WHERE IMIE = ? AND NAZWISKO = ?";
@@ -172,6 +215,30 @@ public class DodawaniePracownika extends JFrame {
             if (komunikatField != null) {
                 komunikatField.setText("Błąd podczas usuwania: " + e.getMessage());
             }
+        }
+    }
+
+    private void updatePracownikInDatabase(String currentImie, String currentNazwisko, String newImie, String newNazwisko) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String updateQuery = "UPDATE pracownicy SET IMIE = ?, NAZWISKO = ? WHERE IMIE = ? AND NAZWISKO = ?";
+            PreparedStatement stmt = conn.prepareStatement(updateQuery);
+            stmt.setString(1, newImie);
+            stmt.setString(2, newNazwisko);
+            stmt.setString(3, currentImie);
+            stmt.setString(4, currentNazwisko);
+            int updatedRows = stmt.executeUpdate();
+            if (updatedRows > 0) {
+                JOptionPane.showMessageDialog(this, "Dane pracownika zostały zaktualizowane!");
+                if (listener != null) {
+                    listener.onPracownikDodany();
+                }
+                loadEmployees();
+            } else {
+                JOptionPane.showMessageDialog(this, "Nie udało się zaktualizować danych pracownika!", "Błąd", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Błąd podczas aktualizacji danych: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
 
